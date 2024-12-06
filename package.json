@@ -1,38 +1,45 @@
 {
-  "name": "video-editor-nextjs",
-  "version": "0.1.0",
+  "name": "polotno-studio",
+  "version": "0.1.1",
+  "author": "Anton Lavrenov",
+  "description": "Free design editor",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
   "dependencies": {
-    "@ffmpeg/core-mt": "^0.12.6",
-    "@ffmpeg/ffmpeg": "^0.12.6",
-    "@ffmpeg/util": "^0.12.1",
-    "@types/three": "^0.170.0",
-    "next": "^15.0.3",
-    "re-resizable": "^6.10.1",
-    "react": "^19.0.0-rc-66855b96-20241106",
-    "react-dnd": "^16.0.1",
-    "react-dnd-html5-backend": "^16.0.1",
-    "react-dom": "^19.0.0-rc-66855b96-20241106",
-    "react-draggable": "^4.4.6",
-    "react-dropzone": "^14.3.5",
-    "react-gantt-timeline": "^0.4.3",
-    "three": "^0.170.0",
-    "zustand": "^5.0.1"
+    "@meronex/icons": "^4.0.0",
+    "@sentry/browser": "^8.38.0",
+    "@sentry/tracing": "^7.114.0",
+    "@sentry/vite-plugin": "^2.22.7",
+    "jszip": "^3.10.1",
+    "localforage": "^1.10.0",
+    "polotno": "^2.16.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-error-boundary": "^4.1.2",
+    "react-scripts": "5.0.1",
+    "vite": "^5.4.11"
+  },
+  "homepage": ".",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "15.0.3",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "@vitejs/plugin-react": "^4.3.3"
   }
 }
