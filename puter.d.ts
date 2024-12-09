@@ -37,6 +37,7 @@ type PuterKVValue = string | number | boolean | string[] | number[] | any[];
 interface Puter {
   auth?: {
     signIn: () => Promise<boolean>;
+    signOut: () => Promise<void>;
     isSignedIn: () => boolean;
     getUser: () => Promise<PuterUser>;
   };

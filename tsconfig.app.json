@@ -21,7 +21,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    // Pathing
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src", "puter.d.ts"]
 }
