@@ -18,7 +18,7 @@ type Props = {
   iconSize?: number;
 };
 
-export const ShapesSection = {
+const ShapesSection = {
   name: "shapes",
   Tab: observer((props: Props) => (
     <SectionTab {...props} name={t("sidePanel.shapes")}>
@@ -28,3 +28,5 @@ export const ShapesSection = {
   // we need observer to update component automatically on any store changes
   Panel: ShapesPanel,
 };
+
+export default ShapesSection;
