@@ -9,11 +9,12 @@ import ptBr from "@/translations/pt-br.json";
 import zhCh from "@/translations/zh-ch.json";
 import React from "react";
 import { useProject } from "@/utils/project";
+import { observer } from "mobx-react-lite";
 
 // load default translations
 setTranslations(en);
 
-const App: FC = () => {
+const App: FC = observer(() => {
   const project = useProject();
 
   React.useEffect(() => {
@@ -33,6 +34,6 @@ const App: FC = () => {
   }, [project.language]);
 
   return <div>This is a div</div>;
-};
+});
 
 export default App;

@@ -26,7 +26,7 @@ const setToStorage = (key: string, value: TAny) => {
   }
 };
 
-class Project {
+export class Project {
   id = "";
   name = "";
   user = {};
