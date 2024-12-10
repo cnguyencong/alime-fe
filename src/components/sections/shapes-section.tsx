@@ -10,17 +10,9 @@ export const ShapesPanel = ({ store }: { store: TAny }) => {
   return <Shapes store={store} />;
 };
 
-type Props = {
-  children: React.ReactNode;
-  name: string;
-  onClick: TAny;
-  active: boolean;
-  iconSize?: number;
-};
-
 const ShapesSection = {
   name: "shapes",
-  Tab: observer((props: Props) => (
+  Tab: observer((props: React.ComponentProps<TAny>) => (
     <SectionTab {...props} name={t("sidePanel.shapes")}>
       <FaShapes />
     </SectionTab>

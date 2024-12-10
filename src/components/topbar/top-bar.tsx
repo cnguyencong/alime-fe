@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { observer } from "mobx-react-lite";
 import {
   Navbar,
@@ -90,7 +89,7 @@ const Status = observer(({ project }: StatusProps) => {
 });
 
 type Props = Readonly<{
-    store: StoreType;
+  store: StoreType;
 }>;
 
 export default observer(({ store }: Props) => {

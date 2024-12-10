@@ -3,6 +3,7 @@
 import { nanoid } from "nanoid";
 import { storage } from "./storage";
 import { TAny } from "../types/common";
+import { DesignItem } from "@/types/polotno";
 
 declare global {
   interface Window {
@@ -119,7 +120,7 @@ export async function backupFromLocalToCloud() {
 }
 
 // TODO: Update object type to match the actual object
-export async function listDesigns(): Promise<{ id: string; name: string }[]> {
+export async function listDesigns(): Promise<DesignItem[]> {
   return (await readKv("designs-list")) || [];
 }
 
@@ -231,8 +232,8 @@ const getPublicSubDomain = batchCall(async () => {
       await window.puter?.fs.mkdir("uploads", { createMissingParents: true });
       await window.puter?.hosting.create(subdomain, "uploads");
       break;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error: TAny) {
+    } catch (error) {
+      console.error(error);
       attempt++;
       continue;
     }
