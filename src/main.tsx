@@ -70,8 +70,7 @@ root.render(
     }}
   >
     <ProjectContext.Provider value={project}>
-      {/* <App store={store} /> */}
-      <App />
+      <App store={store} />
     </ProjectContext.Provider>
   </ErrorBoundary>
 );

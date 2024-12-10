@@ -31,7 +31,7 @@ export class Project {
   name = "";
   user = {};
   store: TAny;
-  saveTimeout: number | null = null;
+  saveTimeout: NodeJS.Timeout | null = null;
   skipSaving = false;
   cloudEnabled = false;
   status = "saved"; // or 'has-changes' or 'saving' or 'loading'

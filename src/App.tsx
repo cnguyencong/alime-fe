@@ -1,4 +1,3 @@
-import { FC } from "react";
 import { setTranslations } from "polotno/config";
 
 import Topbar from "./components/topbar/top-bar";
@@ -30,7 +29,7 @@ type Props = Readonly<{
   store: StoreType;
 }>;
 
-const App: FC = observer(({ store }: Props) => {
+const App = observer(({ store }: Props) => {
   const project = useProject();
   const height = useHeight();
 
