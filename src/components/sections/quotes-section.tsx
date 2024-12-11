@@ -9,8 +9,8 @@ import { getKey } from "polotno/utils/validate-key";
 import { getAPI } from "polotno/utils/api";
 import { StoreType } from "polotno/model/store";
 import { FaComment } from "react-icons/fa6";
-import { TAny } from "@/types/common";
-import { QuoteItem } from "@/types/polotno";
+import { TAny } from "../../types/common";
+import { QuoteItem } from "../../types/polotno";
 
 // import { ImagesGrid } from 'polotno/side-panel/images-grid';
 

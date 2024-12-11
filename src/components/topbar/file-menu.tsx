@@ -12,7 +12,7 @@ import {
 } from "@blueprintjs/core";
 import { downloadFile } from "polotno/utils/download";
 import { StoreType } from "polotno/model/store";
-import { Project } from "@/utils/project";
+import { Project } from "../../utils/project";
 
 type Props = Readonly<{
   store: StoreType;

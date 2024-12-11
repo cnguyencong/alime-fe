@@ -3,7 +3,7 @@
 import { nanoid } from "nanoid";
 import { storage } from "./storage";
 import { TAny } from "../types/common";
-import { DesignItem } from "@/types/polotno";
+import { DesignItem } from "../types/polotno";
 
 declare global {
   interface Window {

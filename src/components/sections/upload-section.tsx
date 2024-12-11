@@ -7,14 +7,14 @@ import {
 } from "polotno/side-panel";
 import { getImageSize, getCrop } from "polotno/utils/image";
 import { getVideoSize, getVideoPreview } from "polotno/utils/video";
-import { dataURLtoBlob } from "@/utils/blob";
+import { dataURLtoBlob } from "../../utils/blob";
 
 import { CloudWarning } from "../cloud-warning";
 
-import { useProject } from "@/utils/project";
-import { listAssets, uploadAsset, deleteAsset } from "@/utils/api";
+import { useProject } from "../../utils/project";
+import { listAssets, uploadAsset, deleteAsset } from "../../utils/api";
 import { StoreType } from "polotno/model/store";
-import { TAny } from "@/types/common";
+import { TAny } from "../../types/common";
 
 function getType(file: File) {
   const { type } = file;

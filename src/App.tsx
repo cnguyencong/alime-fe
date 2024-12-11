@@ -1,19 +1,19 @@
-import { setTranslations } from "polotno/config";
+import React from "react";
 
+import { setTranslations } from "polotno/config";
 import Topbar from "./components/topbar/top-bar";
 
-import fr from "@/translations/fr.json";
-import en from "@/translations/en.json";
-import id from "@/translations/id.json";
-import ru from "@/translations/ru.json";
-import ptBr from "@/translations/pt-br.json";
-import zhCh from "@/translations/zh-ch.json";
-import React from "react";
-import { useProject } from "@/utils/project";
+import fr from "./translations/fr.json";
+import en from "./translations/en.json";
+import id from "./translations/id.json";
+import ru from "./translations/ru.json";
+import ptBr from "./translations/pt-br.json";
+import zhCh from "./translations/zh-ch.json";
+import { useProject } from "./utils/project";
 import { observer } from "mobx-react-lite";
 import { StoreType } from "polotno/model/store";
-import { useHeight } from "@/hooks/use-height";
-import { loadFile } from "@/utils/file";
+import { useHeight } from "./hooks/use-height";
+import { loadFile } from "./utils/file";
 import { Spinner } from "@blueprintjs/core";
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Workspace } from "polotno/canvas/workspace";

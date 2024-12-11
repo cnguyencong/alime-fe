@@ -1,4 +1,4 @@
-import { TAny } from "@/types/common";
+import { TAny } from "../types/common";
 
 export const loadJSONFile = (file: Blob, store: TAny) => {
   const reader = new FileReader();

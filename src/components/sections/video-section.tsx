@@ -7,8 +7,8 @@ import { Video } from "@blueprintjs/icons";
 import { selectVideo } from "polotno/side-panel/select-video";
 import { StoreType } from "polotno/model/store";
 import { VideoElementType } from "polotno/model/video-model";
-import { PolotnoPexelsVideoSearchResponse } from "@/types/polotno";
-import { TAny } from "@/types/common";
+import { PolotnoPexelsVideoSearchResponse } from "../../types/polotno";
+import { TAny } from "../../types/common";
 
 // this is a demo key just for that project
 // (!) please don't use it in your projects

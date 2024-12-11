@@ -4,7 +4,7 @@ import { Shapes } from "polotno/side-panel/elements-panel";
 import { FaShapes } from "react-icons/fa";
 import { t } from "polotno/utils/l10n";
 import React from "react";
-import { TAny } from "@/types/common";
+import { TAny } from "../../types/common";
 
 export const ShapesPanel = ({ store }: { store: TAny }) => {
   return <Shapes store={store} />;

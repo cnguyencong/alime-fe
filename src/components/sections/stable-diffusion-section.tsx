@@ -8,10 +8,10 @@ import { getKey } from "polotno/utils/validate-key";
 import { getImageSize } from "polotno/utils/image";
 
 import { ImagesGrid } from "polotno/side-panel/images-grid";
-import { useCredits } from "@/utils/credits";
+import { useCredits } from "../../utils/credits";
 import { getAPI } from "polotno/utils/api";
 import { StoreType } from "polotno/model/store";
-import { TAny } from "@/types/common";
+import { TAny } from "../../types/common";
 
 type Props = Readonly<{
   store: StoreType;

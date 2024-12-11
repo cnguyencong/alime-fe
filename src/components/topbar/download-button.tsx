@@ -25,7 +25,7 @@ type SaveAsVideoParams = {
 const saveAsVideo = async ({
   store,
   pixelRatio,
-  fps,
+  fps: _fps,
   onProgress,
 }: SaveAsVideoParams) => {
   const json = store.toJSON();
@@ -75,6 +75,8 @@ export const DownloadButton = observer(({ store }: Props) => {
   const [type, setType] = React.useState("png");
   const [progress, setProgress] = React.useState(0);
   const [progressStatus, setProgressStatus] = React.useState("scheduled");
+
+  console.log(progressStatus);
 
   const getName = () => {
     const texts: string[] = [];

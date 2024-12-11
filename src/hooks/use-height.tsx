@@ -1,4 +1,4 @@
-import { TAny } from "@/types/common";
+import { TAny } from "../types/common";
 import React from "react";
 
 const isStandalone = () => {
