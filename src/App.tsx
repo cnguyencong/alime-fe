@@ -19,8 +19,8 @@ import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Workspace } from "polotno/canvas/workspace";
 import { Toolbar } from "polotno/toolbar/toolbar";
 import { ZoomButtons } from "polotno/toolbar/zoom-buttons";
-import { PagesTimeline } from "polotno/pages-timeline";
 import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
+import { TimelineControl } from "./components/timeline/TimelineControl";
 
 // load default translations
 setTranslations(en);
@@ -87,9 +87,13 @@ const App = observer(({ store }: Props) => {
           </SidePanelWrap>
           <WorkspaceWrap>
             <Toolbar store={store} />
-            <Workspace store={store} />
+            <Workspace
+              components={{ PageControls: () => null }}
+              renderOnlyActivePage
+              store={store}
+            />
             <ZoomButtons store={store} />
-            <PagesTimeline store={store} />
+            <TimelineControl store={store} />
           </WorkspaceWrap>
         </PolotnoContainer>
       </div>
