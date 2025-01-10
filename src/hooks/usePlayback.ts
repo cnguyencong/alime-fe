@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { ElementType } from "polotno/model/group-model";
+import { pixelsPerSecond } from "../constants";
 
 export const usePlayback = (
   isPlaying: boolean,
   elements: ElementType[],
-  pixelsPerSecond: number,
   setCurrentTime: (time: number) => void,
   setIsPlaying: (isPlaying: boolean) => void,
   maxEndTime: number
@@ -32,5 +32,5 @@ export const usePlayback = (
         clearInterval(intervalId);
       }
     };
-  }, [isPlaying, elements, pixelsPerSecond, setCurrentTime, setIsPlaying]);
+  }, [isPlaying, elements, setCurrentTime, setIsPlaying]);
 };

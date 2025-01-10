@@ -13,6 +13,7 @@ import { TAny } from "../../types/common";
 import { StoreType } from "polotno/model/store";
 import { PageType } from "polotno/model/page-model";
 import { ElementType } from "polotno/model/group-model";
+import { pixelsPerSecond } from "../../constants";
 
 const TimelineContainer = styled.div`
   position: relative;
@@ -68,17 +69,17 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const [isDraggingIndicator, setIsDraggingIndicator] = useState(false);
   const [trimming, setTrimming] = useState<TAny | null>(null);
 
-  const pixelsPerSecond = 2;
-  const elements = useTimelineElements(
-    store,
-    currentTime,
-    isPlaying,
-    pixelsPerSecond
-  );
+  // Maximize video duration to avoid playback issues
+  const currentPage = store.activePage;
+  currentPage.set({ duration: 99999999999999 });
+
+  const elements = useTimelineElements(store, currentTime, isPlaying);
   const maxEndTime =
     elements.length > 0
       ? Math.max(...elements.map((el) => el.custom.endAt))
       : 0;
+
+  console.log(maxEndTime);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -92,14 +93,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     }
   }, [isPlaying]);
 
-  usePlayback(
-    isPlaying,
-    elements,
-    pixelsPerSecond,
-    setCurrentTime,
-    setIsPlaying,
-    maxEndTime
-  );
+  usePlayback(isPlaying, elements, setCurrentTime, setIsPlaying, maxEndTime);
 
   const handleDragStart = (
     e: React.MouseEvent<HTMLDivElement>,
@@ -136,48 +130,37 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const id = trimming?.element?.id ?? dragging?.element?.id;
+    const element = store.getElementById(id);
+
     if (dragging) {
       e.preventDefault();
       const container = containerRef.current.getBoundingClientRect();
       const newX = Math.max(0, e.clientX - container.left - dragging.offsetX);
-
-      store.pages.forEach((page: TAny) => {
-        page.children.forEach((el: TAny) => {
-          if (el.id === dragging.element.id) {
-            el.set({ custom: { startAt: newX, endAt: el.duration + newX } });
-          }
-        });
+      element?.set({
+        custom: { startAt: newX, endAt: element.duration + newX },
       });
     } else if (trimming) {
       const deltaX = e.clientX - trimming.startX;
       const deltaTime = deltaX / pixelsPerSecond;
 
-      store.pages.forEach((page: TAny) => {
-        page.children.forEach((el: TAny) => {
-          if (el.id === trimming.element.id) {
-            if (trimming.side === "left") {
-              const newStartTime = Math.max(
-                0,
-                trimming.originalStartTime + deltaTime
-              );
-              const maxStartTime = trimming.originalEndTime - 1;
+      if (trimming.side === "left") {
+        const newStartTime = Math.max(
+          0,
+          trimming.originalStartTime + deltaTime
+        );
+        const maxStartTime = trimming.originalEndTime - 1;
 
-              el.set({
-                startTime: Math.min(newStartTime, maxStartTime),
-              });
-            } else {
-              const newEndTime = Math.min(
-                1,
-                trimming.originalEndTime + deltaTime
-              );
-              const minEndTime = trimming.originalStartTime + 1; // Minimum 1 second duration
-              el.set({
-                endTime: Math.max(newEndTime, minEndTime),
-              });
-            }
-          }
+        element?.set({
+          startTime: Math.min(newStartTime, maxStartTime),
         });
-      });
+      } else {
+        const newEndTime = Math.min(1, trimming.originalEndTime + deltaTime);
+        const minEndTime = trimming.originalStartTime + 1; // Minimum 1 second duration
+        element?.set({
+          endTime: Math.max(newEndTime, minEndTime),
+        });
+      }
     }
     handleIndicatorDragMove(e);
   };
@@ -206,6 +189,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   useEffect(() => {
     const handleGlobalMouseUp = () => {
       setDragging(null);
+      setTrimming(null);
     };
 
     window.addEventListener("mouseup", handleGlobalMouseUp);
@@ -258,15 +242,17 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
           <IndicatorHandle onMouseDown={handleIndicatorDragStart} />
         </TimelineIndicator>
         <TimelineRowWrapper>
-          {elements.map((element, _index) => (
-            <TimelineContextMenu element={element} key={element.id}>
-              <TimelineItem
-                element={element}
-                handleDragStart={handleDragStart}
-                handleTrimStart={handleTrimStart}
-              />
-            </TimelineContextMenu>
-          ))}
+          {elements.map((element, _index) =>
+            element.custom?.type !== "transcript" ? (
+              <TimelineContextMenu element={element} key={element.id}>
+                <TimelineItem
+                  element={element}
+                  handleDragStart={handleDragStart}
+                  handleTrimStart={handleTrimStart}
+                />
+              </TimelineContextMenu>
+            ) : null
+          )}
         </TimelineRowWrapper>
       </TimelineContainer>
     </>

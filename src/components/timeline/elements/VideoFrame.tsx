@@ -4,6 +4,7 @@ interface VideoFramesProps {
   src: string;
 }
 
+const maxFrames = 100;
 const VideoFrames = ({ src }: VideoFramesProps) => {
   const [frames, setFrames] = useState<string[]>([]);
 
@@ -27,7 +28,7 @@ const VideoFrames = ({ src }: VideoFramesProps) => {
 
     const extractFrames = async () => {
       const duration = video.duration;
-      const frameCount = Math.min(10, Math.ceil(duration / 10)); // Calculate frames based on duration
+      const frameCount = Math.min(maxFrames, Math.ceil(duration / 10)); // Calculate frames based on duration
       const interval = duration / Math.max(frameCount, 1); // Ensure we don't divide by zero
       const capturedFrames: string[] = [];
 
@@ -57,7 +58,7 @@ const VideoFrames = ({ src }: VideoFramesProps) => {
           key={i}
           src={frame}
           alt={`Frame ${i}`}
-          style={{ width: "auto", height: "45px", marginRight: "2px" }}
+          style={{ width: "45px", height: "45px", marginRight: "2px" }}
         />
       ))}
     </div>
