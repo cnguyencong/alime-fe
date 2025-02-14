@@ -19,8 +19,10 @@ import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Workspace } from "polotno/canvas/workspace";
 import { Toolbar } from "polotno/toolbar/toolbar";
 import { ZoomButtons } from "polotno/toolbar/zoom-buttons";
-import { PagesTimeline } from "polotno/pages-timeline";
 import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
+import { TimelineControl } from "./components/timeline/TimelineControl";
+import GenTranscript from "./components/transcript/GenTranscript";
+import { TranscriptTab } from "./components/transcript/TranscriptTab";
 
 // load default translations
 setTranslations(en);
@@ -29,7 +31,12 @@ type Props = Readonly<{
   store: StoreType;
 }>;
 
+const sections = [...DEFAULT_SECTIONS, TranscriptTab].filter(
+  (section) => section.name !== "layers"
+);
+
 const App = observer(({ store }: Props) => {
+  console.log(store.toJSON());
   const project = useProject();
   const height = useHeight();
 
@@ -83,13 +90,23 @@ const App = observer(({ store }: Props) => {
       <div style={{ height: "calc(100% - 50px)" }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
-            <SidePanel store={store} sections={DEFAULT_SECTIONS} />
+            <SidePanel store={store} sections={sections} />
           </SidePanelWrap>
           <WorkspaceWrap>
-            <Toolbar store={store} />
-            <Workspace store={store} />
+            <Toolbar
+              store={store}
+              components={{
+                ActionControls: GenTranscript,
+                PageDuration: () => null,
+              }}
+            />
+            <Workspace
+              components={{ PageControls: () => null }}
+              renderOnlyActivePage
+              store={store}
+            />
             <ZoomButtons store={store} />
-            <PagesTimeline store={store} />
+            <TimelineControl store={store} />
           </WorkspaceWrap>
         </PolotnoContainer>
       </div>
