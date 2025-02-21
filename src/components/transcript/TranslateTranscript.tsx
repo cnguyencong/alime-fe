@@ -1,51 +1,39 @@
-import { Button } from "@blueprintjs/core";
+import {
+  Button,
+  Menu,
+  MenuDivider,
+  MenuItem,
+  Popover,
+  Position,
+} from "@blueprintjs/core";
 import { StoreType } from "polotno/model/store";
-import { dataURLtoBlob } from "../../shared/utils/blob";
 import { genTextElement } from "../../shared/utils/text";
 import { TranscriptApi } from "../../shared/services/transcript.api";
 
 import { useState } from "react";
 import { TAny } from "../../shared/types/common";
+import { LocaleConfig } from "../../shared/constants/locale";
 import { PageType } from "polotno/model/page-model";
 import { ElementType } from "polotno/model/group-model";
 
-const GenTranscript = ({ store }: { store: StoreType }) => {
-  const storeJson = store.toJSON() as TAny;
-  const videoEl = storeJson.pages[0].children?.find(
-    (_: TAny) => _.type === "video"
-  );
-
+const TranslateTranscript = ({ store }: { store: StoreType }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [language, setLanguage] = useState("en");
+  const segments = store?.custom?.langSegment ?? [];
 
-  const handleGenerateSubtitles = async () => {
-    if (!videoEl) return;
+  const handleTranslateSubtitles = async () => {
+    if (segments.length === 0) return;
 
     setIsGenerating(true);
-    const isBase64Video = videoEl?.src?.startsWith("data:video");
-    const isVideoLink =
-      videoEl?.src?.startsWith("http") || videoEl?.src?.startsWith("https");
-
     try {
-      let videoBlob;
-
-      if (isBase64Video) {
-        videoBlob = dataURLtoBlob(videoEl.src);
-      } else if (isVideoLink) {
-        // Fetch video from URL and convert to blob
-        const response = await fetch(videoEl.src);
-        videoBlob = await response.blob();
-      }
-
-      if (videoBlob) {
-        const videoFile = new File([videoBlob], "video.mp4", {
-          type: "video/mp4",
-        });
-        const response = await TranscriptApi.genTranscript(videoFile);
-        if (response.success && response.segments.length > 0) {
-          removeOldTranscript();
-          addTranscriptElement(response);
-        }
+      const body = {
+        segments,
+        targetLanguage: language,
+      };
+      const response = await TranscriptApi.translateTranscript(body);
+      if (response.success && response.segments.length > 0) {
+        removeOldTranscript();
+        addTranscriptElement(response.segments);
       }
     } catch (error) {
       console.error("Error processing video:", error);
@@ -70,7 +58,7 @@ const GenTranscript = ({ store }: { store: StoreType }) => {
     store.deleteElements(oldIds);
   };
 
-  const addTranscriptElement = (response: TAny) => {
+  const addTranscriptElement = (segments: TAny) => {
     const canvasWidth = store.width;
     const canvasHeight = store.height;
     const fontSize = 30;
@@ -78,7 +66,7 @@ const GenTranscript = ({ store }: { store: StoreType }) => {
     const textWidth = canvasWidth;
     const textX = 0;
     const textYOffset = 10;
-    for (const transcript of response.segments) {
+    for (const transcript of segments) {
       // Calculate how many characters can fit in one line
       const charsPerLine = Math.floor(canvasWidth / (fontSize * 0.6)); // Approximate character width
       const lines = Math.ceil(transcript.text.length / charsPerLine);
@@ -99,23 +87,46 @@ const GenTranscript = ({ store }: { store: StoreType }) => {
         custom: { ...textEl?.custom, lang: language },
       });
     }
-
-    store.set({
-      custom: { langSegment: response.segments, processID: response.processID },
-    });
-
     store.openSidePanel("transcript-panel");
   };
 
   return (
-    <Button
-      icon="add"
-      text={`Generate`}
-      intent="primary"
-      loading={isGenerating}
-      onClick={() => handleGenerateSubtitles()}
-    />
+    <Popover
+      content={
+        <Menu>
+          <MenuDivider title="Select language:" />
+          {LocaleConfig.map((locale: TAny) => (
+            <MenuItem
+              key={locale.code}
+              icon={locale.code === language ? "tick" : ""}
+              text={locale.name}
+              onClick={() => setLanguage(locale.code)}
+              shouldDismissPopover={false}
+            />
+          ))}
+
+          <Button
+            fill
+            intent="primary"
+            loading={isGenerating}
+            onClick={async () => handleTranslateSubtitles()}
+            style={{ marginTop: "1rem" }}
+          >
+            Translate
+          </Button>
+        </Menu>
+      }
+      position={Position.BOTTOM_RIGHT}
+    >
+      <Button
+        icon="globe"
+        text={`Translate`}
+        intent="success"
+        loading={isGenerating}
+        disabled={segments.length === 0}
+      />
+    </Popover>
   );
 };
 
-export default GenTranscript;
+export default TranslateTranscript;

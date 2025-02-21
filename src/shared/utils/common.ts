@@ -1,3 +1,6 @@
+import { LocaleConfig } from "../constants/locale";
+import { TAny } from "../types/common";
+
 export const calcPixelsPerSecond = (
   duration: number,
   pixelsPerSecond: number
@@ -14,4 +17,8 @@ export const formatTime = (seconds: number) => {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+};
+
+export const getLangByCode = (code: string) => {
+  return LocaleConfig.find((lang: TAny) => lang.code === code);
 };

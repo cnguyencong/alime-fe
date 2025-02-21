@@ -7,13 +7,11 @@ import { ContextMenu, Menu, MenuItem } from "@blueprintjs/core";
 import TimelineHeader from "./TimelineHeader";
 import TimelineItem from "./TimelineItem";
 //Hooks
-import { useTimelineElements } from "../../hooks/useTimelineElements";
-import { usePlayback } from "../../hooks/usePlayback";
-import { TAny } from "../../types/common";
+import { useTimelineElements } from "../../functions/hooks/useTimelineElements";
+import { TAny } from "../../shared/types/common";
 import { StoreType } from "polotno/model/store";
-import { PageType } from "polotno/model/page-model";
 import { ElementType } from "polotno/model/group-model";
-import { pixelsPerSecond } from "../../constants";
+import { config } from "../../shared/constants";
 
 const TimelineContainer = styled.div`
   position: relative;
@@ -64,36 +62,26 @@ interface TimelineControlProps {
 export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const [dragging, setDragging] = useState<TAny | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
   const containerRef = useRef<TAny | null>(null);
   const [isDraggingIndicator, setIsDraggingIndicator] = useState(false);
   const [trimming, setTrimming] = useState<TAny | null>(null);
 
+  const currentTimeInSec = store.currentTime / 1000;
+
   // Maximize video duration to avoid playback issues
   const currentPage = store.activePage;
   currentPage.set({ duration: 99999999999999 });
+  // const pageElements = currentPage.children.toJSON().map((el) => el.toJSON());
+  // const elementIds = pageElements.map((el) => el.id);
+  // console.log(elementIds);
 
-  const elements = useTimelineElements(store, currentTime, isPlaying);
+  // const elements = [];
+  const elements = useTimelineElements(store, store.currentTime, isPlaying);
+
   const maxEndTime =
     elements.length > 0
       ? Math.max(...elements.map((el) => el.custom.endAt))
       : 0;
-
-  console.log(maxEndTime);
-
-  useEffect(() => {
-    if (!isPlaying) {
-      store.pages.forEach((page: PageType) => {
-        page.children.forEach((element: ElementType) => {
-          if (element.type === "video") {
-            element.store.stop();
-          }
-        });
-      });
-    }
-  }, [isPlaying]);
-
-  usePlayback(isPlaying, elements, setCurrentTime, setIsPlaying, maxEndTime);
 
   const handleDragStart = (
     e: React.MouseEvent<HTMLDivElement>,
@@ -114,14 +102,14 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     const container = containerRef.current.getBoundingClientRect();
     const offsetX = e.clientX - container.left;
     setIsDraggingIndicator(true);
-    setCurrentTime(offsetX);
+    store.setCurrentTime(offsetX);
   };
 
   const handleIndicatorDragMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDraggingIndicator) {
       const container = containerRef.current.getBoundingClientRect();
       const newX = Math.max(0, e.clientX - container.left);
-      setCurrentTime(newX);
+      store.setCurrentTime(newX * 100);
     }
   };
 
@@ -131,18 +119,21 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const id = trimming?.element?.id ?? dragging?.element?.id;
-    const element = store.getElementById(id);
+    const element = store.getElementById(id) as TAny;
 
     if (dragging) {
       e.preventDefault();
       const container = containerRef.current.getBoundingClientRect();
       const newX = Math.max(0, e.clientX - container.left - dragging.offsetX);
       element?.set({
-        custom: { startAt: newX, endAt: element.duration + newX },
+        custom: {
+          startAt: newX,
+          endAt: (element?.duration ?? config.defaultDuration) + newX,
+        },
       });
     } else if (trimming) {
       const deltaX = e.clientX - trimming.startX;
-      const deltaTime = deltaX / pixelsPerSecond;
+      const deltaTime = deltaX / config.pixelsPerSecond;
 
       if (trimming.side === "left") {
         const newStartTime = Math.max(
@@ -172,7 +163,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
 
   const handleTrimStart = (
     e: React.MouseEvent<HTMLDivElement>,
-    element: ElementType,
+    element: TAny,
     side: "left" | "right"
   ) => {
     e.stopPropagation();
@@ -198,9 +189,13 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
+
+    if (store.currentTime > 0) {
+      store.stop();
+    }
   };
 
-  const TimelineContextMenu = ({ children, element }: TAny) => {
+  const TimelineContextMenu = ({ children, elementId }: TAny) => {
     return (
       <ContextMenu
         content={
@@ -208,7 +203,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
             <MenuItem
               text="Delete"
               intent="danger"
-              onClick={() => deleteElement(element.id)}
+              onClick={() => deleteElement(elementId)}
             />
           </Menu>
         }
@@ -226,8 +221,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     <>
       <TimelineHeader
         isPlaying={isPlaying}
-        currentTime={currentTime}
-        pixelsPerSecond={pixelsPerSecond}
+        currentTime={currentTimeInSec}
         maxTime={maxEndTime}
         handlePlayPause={handlePlayPause}
       />
@@ -238,15 +232,23 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <TimelineIndicator style={{ left: `${currentTime}px` }}>
+        <TimelineIndicator
+          style={{ left: `${currentTimeInSec * config.pixelsPerSecond}px` }}
+        >
           <IndicatorHandle onMouseDown={handleIndicatorDragStart} />
         </TimelineIndicator>
         <TimelineRowWrapper>
           {elements.map((element, _index) =>
             element.custom?.type !== "transcript" ? (
-              <TimelineContextMenu element={element} key={element.id}>
+              <TimelineContextMenu elementId={element.id} key={element.id}>
                 <TimelineItem
-                  element={element}
+                  element={{
+                    id: element.id,
+                    type: element.type,
+                    custom: element.custom,
+                    // src: element.src, // Laggy
+                    text: element.text,
+                  }}
                   handleDragStart={handleDragStart}
                   handleTrimStart={handleTrimStart}
                 />

@@ -15,7 +15,7 @@ import { getAPI } from "polotno/utils/api";
 import { ImagesGrid } from "polotno/side-panel/images-grid";
 import { FaVectorSquare } from "react-icons/fa";
 import { StoreType } from "polotno/model/store";
-import { TAny } from "../../types/common";
+import { TAny } from "../../shared/types/common";
 
 const iconToSrc = async (id: string) => {
   const req = await fetch(

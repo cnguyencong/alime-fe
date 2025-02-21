@@ -1,24 +1,30 @@
 import { Button } from "@blueprintjs/core";
 import styled from "styled-components";
-import { formatTime } from "../../utils/common";
+import { formatTime, getLangByCode } from "../../shared/utils/common";
+import TimelineSetting from "./TimelineSetting";
+import { useLangStore } from "../../shared/zustand/language";
+import { TAny } from "../../shared/types/common";
 
-const PlayerTime = styled.div`
+const FlexContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 5px;
-  color: white;
 `;
 
-const TimelineHeaderContainer = styled.div`
-  display: flex;
+const PlayerTime = styled(FlexContainer)`
+  justify-content: center;
+  color: white;
+  margin-left: 5px;
+`;
+
+const TimelineHeaderContainer = styled(FlexContainer)`
   gap: 5px;
+  justify-content: space-between;
 `;
 
 interface TimelineHeaderProps {
   isPlaying: boolean;
   currentTime: number;
-  pixelsPerSecond: number;
   maxTime: number;
   handlePlayPause: () => void;
 }
@@ -26,23 +32,29 @@ interface TimelineHeaderProps {
 const TimelineHeader = ({
   isPlaying,
   currentTime,
-  pixelsPerSecond,
   maxTime,
   handlePlayPause,
 }: TimelineHeaderProps) => {
+  const currentLang = useLangStore((state: TAny) => state.selectedLang);
   return (
     <TimelineHeaderContainer>
-      <Button
-        icon={isPlaying ? "pause" : "play"}
-        onClick={handlePlayPause}
-        intent={isPlaying ? "danger" : "success"}
-        text={isPlaying ? "Pause" : "Play"}
-      />
-      <PlayerTime>
-        <span>{formatTime(currentTime / pixelsPerSecond)}</span>
-        <span>/</span>
-        <span>{formatTime(maxTime / pixelsPerSecond)}</span>
-      </PlayerTime>
+      <FlexContainer>
+        <Button
+          icon={isPlaying ? "pause" : "play"}
+          onClick={handlePlayPause}
+          intent={isPlaying ? "danger" : "success"}
+          text={isPlaying ? "Pause" : "Play"}
+        />
+        <PlayerTime>
+          <span>{formatTime(currentTime)}</span>
+          <span>/</span>
+          <span>{formatTime(maxTime / 1000)}</span>
+        </PlayerTime>
+        <TimelineSetting />
+        <span style={{ color: "white" }}>
+          {getLangByCode(currentLang)?.name}
+        </span>
+      </FlexContainer>
     </TimelineHeaderContainer>
   );
 };

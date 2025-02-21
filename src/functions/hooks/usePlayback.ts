@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { ElementType } from "polotno/model/group-model";
-import { pixelsPerSecond } from "../constants";
+import { config } from "../../shared/constants";
 
 export const usePlayback = (
   isPlaying: boolean,
@@ -14,7 +14,9 @@ export const usePlayback = (
 
     if (isPlaying) {
       intervalId = setInterval(() => {
-        const pixelsPerFrame = pixelsPerSecond / 60;
+        const pixelsPerFrame = config.pixelsPerSecond / 60;
+        console.log("pixelsPerFrame", pixelsPerFrame);
+
         setCurrentTime((time: number) => {
           const newTime = time + pixelsPerFrame;
 

@@ -13,12 +13,12 @@ import {
 import { CloudWarning } from "../cloud-warning";
 
 import { SectionTab } from "polotno/side-panel";
-import { useProject } from "../../utils/project";
-import * as api from "../../utils/api";
+import { useProject } from "../../shared/utils/project";
+import * as api from "../../shared/utils/api";
 import { FaFolder } from "react-icons/fa";
-import { TAny } from "../../types/common";
+import { TAny } from "../../shared/types/common";
 import { StoreType } from "polotno/model/store";
-import { DesignItem } from "../../types/polotno";
+import { DesignItem } from "../../shared/types/polotno";
 
 type DesignCardProps = Readonly<{
   design: DesignItem;

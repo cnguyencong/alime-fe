@@ -1,35 +1,45 @@
-import { calcPixelsPerSecond } from "../utils/common";
+import { calcPixelsPerSecond } from "../../shared/utils/common";
 import { StoreType } from "polotno/model/store";
 import { ElementType } from "polotno/model/group-model";
 import { PageType } from "polotno/model/page-model";
-import { pixelsPerSecond } from "../constants";
+import { config } from "../../shared/constants";
+import { useLangStore } from "../../shared/zustand/language";
+import { TAny } from "../../shared/types/common";
 export const useTimelineElements = (
   store: StoreType,
   currentTime: number,
   isPlaying: boolean
 ) => {
+  const currentLang = useLangStore((state: TAny) => state.selectedLang);
   const elements: ElementType[] = [];
   const videoElIds: string[] = [];
+
   store.pages.forEach((page: PageType) => {
     page.children.forEach((element: ElementType) => {
-      // store.deleteElements([element.id]);
       const elementDuration =
-        element.custom?.duration ?? element.duration ?? page.duration;
+        element.custom?.duration ?? element?.duration ?? config.defaultDuration;
       const elementStartTime =
         page.startTime + (element.animations?.[0]?.delay || 0);
 
-      const elementStartAt = element.custom?.startAt || elementStartTime;
+      const elementStartAt = element.custom?.startAt ?? element?.startTime ?? 0;
       const durationInPixels =
-        calcPixelsPerSecond(elementDuration, pixelsPerSecond) ?? 50;
-      const elementEndAt = elementStartAt + durationInPixels;
+        calcPixelsPerSecond(elementDuration, config.pixelsPerSecond) ?? 50;
+      const elementEndAt = element.custom?.endAt ?? elementDuration;
       const elementWidth = element.type === "video" ? durationInPixels : 50;
 
-      const isInRange =
+      let isInRange =
         currentTime >= elementStartAt && currentTime <= elementEndAt;
       const shouldPlay = isInRange && isPlaying;
 
+      if (
+        element.custom?.type === "transcript" &&
+        element.custom?.lang !== currentLang
+      ) {
+        isInRange = false;
+      }
+
       const customValue = {
-        ...element.custom,
+        ...element?.custom,
         startAt: elementStartAt,
         endAt: elementEndAt,
         width: elementWidth,
@@ -53,19 +63,28 @@ export const useTimelineElements = (
       elements.push(timelineElement);
 
       if (shouldPlay && element.type === "video" && !element.store.isPlaying) {
-        element.store.play();
+        requestAnimationFrame(() => {
+          element.store.play({
+            startTime: elementStartAt,
+            endTime: elementDuration,
+          });
+        });
       }
 
       if (element.type === "video") {
         videoElIds.push(element.id);
-
         // Only allow one video element to be played at a time
         if (videoElIds.length > 1) {
-          store.deleteElements([element.id]);
+          requestAnimationFrame(() => {
+            store.deleteElements([element.id]);
+          });
         }
       }
-
-      element.set({ visible: isInRange });
+      if (element.visible !== isInRange) {
+        requestAnimationFrame(() => {
+          element.set({ visible: isInRange });
+        });
+      }
     });
   });
 

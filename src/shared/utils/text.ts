@@ -1,6 +1,5 @@
-import { pixelsPerSecond } from "../constants";
-
 export const genTextElement = (
+  id: number,
   text: string,
   start: number,
   end: number,
@@ -10,7 +9,6 @@ export const genTextElement = (
   y: number
 ) => {
   const duration = (end - start) * 1000; // in miliseconds
-  const startAt = start * pixelsPerSecond;
 
   return {
     type: "text",
@@ -63,12 +61,13 @@ export const genTextElement = (
     backgroundCornerRadius: 0.5,
     backgroundPadding: 0.5,
     custom: {
-      startAt: startAt,
+      startAt: start * 1000,
       duration: duration,
-      endAt: duration,
+      endAt: end * 1000,
       type: "transcript",
       start,
       end,
+      id,
     },
   };
 };

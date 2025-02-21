@@ -3,6 +3,7 @@ import VideoFrames from "./elements/VideoFrame";
 import TextElement from "./elements/TextElement";
 import ImageElement from "./elements/ImageElement";
 import { ElementType } from "polotno/model/group-model";
+import React from "react";
 
 const TimelineRow = styled.div`
   position: relative;
@@ -86,42 +87,40 @@ interface TimelineItemProps {
   ) => void;
 }
 
-const TimelineItem = ({
-  element,
-  handleDragStart,
-  handleTrimStart,
-}: TimelineItemProps) => {
-  return (
-    <TimelineRow key={element.id}>
-      <Item
-        style={{
-          left: `${element.custom.startAt}px`,
-          width: `${element.custom.width}px`,
-        }}
-        onMouseDown={(e) => {
-          if (e.button === 0) {
-            handleDragStart(e, element);
-          }
-        }}
-      >
-        <TrimHandleLeft
+const TimelineItem = React.memo(
+  ({ element, handleDragStart, handleTrimStart }: TimelineItemProps) => {
+    return (
+      <TimelineRow key={element.id}>
+        <Item
+          style={{
+            left: `${element.custom?.startAt}px`,
+            width: `${element.custom?.width}px`,
+          }}
           onMouseDown={(e) => {
             if (e.button === 0) {
-              handleTrimStart(e, element, "left");
+              handleDragStart(e, element);
             }
           }}
-        />
-        <ElementRenderer element={element} />
-        <TrimHandleRight
-          onMouseDown={(e) => {
-            if (e.button === 0) {
-              handleTrimStart(e, element, "right");
-            }
-          }}
-        />
-      </Item>
-    </TimelineRow>
-  );
-};
+        >
+          <TrimHandleLeft
+            onMouseDown={(e) => {
+              if (e.button === 0) {
+                handleTrimStart(e, element, "left");
+              }
+            }}
+          />
+          <ElementRenderer element={element} />
+          <TrimHandleRight
+            onMouseDown={(e) => {
+              if (e.button === 0) {
+                handleTrimStart(e, element, "right");
+              }
+            }}
+          />
+        </Item>
+      </TimelineRow>
+    );
+  }
+);
 
 export default TimelineItem;

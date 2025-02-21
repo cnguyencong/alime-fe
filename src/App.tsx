@@ -1,19 +1,19 @@
 import React from "react";
 
 import { setTranslations } from "polotno/config";
-import Topbar from "./components/topbar/top-bar";
 
-import fr from "./translations/fr.json";
-import en from "./translations/en.json";
-import id from "./translations/id.json";
-import ru from "./translations/ru.json";
-import ptBr from "./translations/pt-br.json";
-import zhCh from "./translations/zh-ch.json";
-import { useProject } from "./utils/project";
+import fr from "./shared/translations/fr.json";
+import en from "./shared/translations/en.json";
+import id from "./shared/translations/id.json";
+import ru from "./shared/translations/ru.json";
+import ptBr from "./shared/translations/pt-br.json";
+import zhCh from "./shared/translations/zh-ch.json";
+
+import { useProject } from "./shared/utils/project";
 import { observer } from "mobx-react-lite";
 import { StoreType } from "polotno/model/store";
-import { useHeight } from "./hooks/use-height";
-import { loadFile } from "./utils/file";
+import { useHeight } from "./functions/hooks/use-height";
+import { loadFile } from "./shared/utils/file";
 import { Spinner } from "@blueprintjs/core";
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Workspace } from "polotno/canvas/workspace";
@@ -21,8 +21,8 @@ import { Toolbar } from "polotno/toolbar/toolbar";
 import { ZoomButtons } from "polotno/toolbar/zoom-buttons";
 import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
 import { TimelineControl } from "./components/timeline/TimelineControl";
-import GenTranscript from "./components/transcript/GenTranscript";
 import { TranscriptTab } from "./components/transcript/TranscriptTab";
+import { DownloadButton } from "./components/topbar/download-button";
 
 // load default translations
 setTranslations(en);
@@ -39,6 +39,17 @@ const App = observer(({ store }: Props) => {
   console.log(store.toJSON());
   const project = useProject();
   const height = useHeight();
+
+  React.useEffect(() => {
+    const workspaceContainer = document.querySelector(
+      ".polotno-workspace-container"
+    );
+    if (workspaceContainer) {
+      const width = workspaceContainer.clientWidth;
+      const height = workspaceContainer.clientHeight;
+      store.setSize(width, height, true);
+    }
+  }, []);
 
   React.useEffect(() => {
     if (project.language.startsWith("fr")) {
@@ -86,7 +97,6 @@ const App = observer(({ store }: Props) => {
       }}
       onDrop={handleDrop}
     >
-      <Topbar store={store} />
       <div style={{ height: "calc(100% - 50px)" }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
@@ -96,7 +106,7 @@ const App = observer(({ store }: Props) => {
             <Toolbar
               store={store}
               components={{
-                ActionControls: GenTranscript,
+                ActionControls: DownloadButton,
                 PageDuration: () => null,
               }}
             />
