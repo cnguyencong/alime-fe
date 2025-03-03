@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 
 interface VideoFramesProps {
@@ -5,7 +6,7 @@ interface VideoFramesProps {
 }
 
 const maxFrames = 100;
-const VideoFrames = ({ src }: VideoFramesProps) => {
+const VideoFrames = React.memo(({ src }: VideoFramesProps) => {
   const [frames, setFrames] = useState<string[]>([]);
 
   useEffect(() => {
@@ -63,6 +64,6 @@ const VideoFrames = ({ src }: VideoFramesProps) => {
       ))}
     </div>
   );
-};
+});
 
 export default VideoFrames;

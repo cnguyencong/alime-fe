@@ -9,6 +9,7 @@ import {
 import { StoreType } from "polotno/model/store";
 import { genTextElement } from "../../shared/utils/text";
 import { TranscriptApi } from "../../shared/services/transcript.api";
+import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
 
 import { useState } from "react";
 import { TAny } from "../../shared/types/common";
@@ -20,6 +21,7 @@ const TranslateTranscript = ({ store }: { store: StoreType }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [language, setLanguage] = useState("en");
   const segments = store?.custom?.langSegment ?? [];
+  const selectedTranscripts = useTranscriptLang(store);
 
   const handleTranslateSubtitles = async () => {
     if (segments.length === 0) return;
@@ -111,6 +113,7 @@ const TranslateTranscript = ({ store }: { store: StoreType }) => {
             loading={isGenerating}
             onClick={async () => handleTranslateSubtitles()}
             style={{ marginTop: "1rem" }}
+            disabled={selectedTranscripts?.includes(language)}
           >
             Translate
           </Button>

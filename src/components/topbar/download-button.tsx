@@ -8,7 +8,7 @@ import {
   Slider,
   Popover,
   ProgressBar,
-  MenuItem,
+  Checkbox,
 } from "@blueprintjs/core";
 import JSZip from "jszip";
 import { downloadFile } from "polotno/utils/download";
@@ -22,7 +22,6 @@ import { ElementType } from "polotno/model/group-model";
 import { TAny } from "../../shared/types/common";
 import { TranscriptApi } from "../../shared/services/transcript.api";
 import { config } from "../../shared/constants";
-import { dataURLtoBlob } from "../../shared/utils/blob";
 
 type Props = Readonly<{
   store: StoreType;
@@ -40,6 +39,8 @@ export const DownloadButton = observer(({ store }: Props) => {
   const [progressStatus, setProgressStatus] = React.useState("scheduled");
   const selectedTranscripts = useTranscriptLang(store);
   const [language, setLanguage] = useState("en");
+  const [exportSubtitle, setExportSubtitle] = useState(false);
+  const [exportVoice, setExportVoice] = useState(false);
 
   const getName = () => {
     const texts: string[] = [];
@@ -55,11 +56,35 @@ export const DownloadButton = observer(({ store }: Props) => {
     return words.join(" ").replace(/\s/g, "-").toLowerCase() || "polotno";
   };
 
+  const calculateTrimTime = (
+    scaledStart: number,
+    scaledEnd: number,
+    durationMs: number
+  ) => {
+    let startTimeMs = Math.round(scaledStart * durationMs);
+    let endTimeMs = Math.round(scaledEnd * durationMs);
+
+    let startTimeSec = startTimeMs / 1000;
+    let endTimeSec = endTimeMs / 1000;
+
+    return {
+      startTimeMs,
+      endTimeMs,
+      startTimeSec,
+      endTimeSec,
+    };
+  };
+
   const downloadVideo = async () => {
     if (!store.custom?.processID) return;
 
     setProgressStatus("scheduled");
     const segments: TAny[] = [];
+
+    let isTrimVideo = false;
+    let trimStart = 0;
+    let trimEnd = 0;
+
     store.pages.forEach((page: PageType) => {
       page.children.forEach((element: ElementType) => {
         if (
@@ -72,6 +97,15 @@ export const DownloadButton = observer(({ store }: Props) => {
             end: element.custom?.end,
             text: element.text,
           });
+        } else if (element.type === "video") {
+          isTrimVideo = !(element.startTime === 0 && element.endTime === 1);
+          const calcTrimResult = calculateTrimTime(
+            element.startTime,
+            element.endTime,
+            element.duration
+          );
+          trimStart = calcTrimResult.startTimeSec;
+          trimEnd = calcTrimResult.endTimeSec;
         }
       });
     });
@@ -79,59 +113,19 @@ export const DownloadButton = observer(({ store }: Props) => {
     const body = {
       processID: store.custom?.processID,
       segments,
+      language: language,
+      isShowCaption: exportSubtitle,
+      isAppendTTS: exportVoice,
+      isTrimVideo,
+      trimStart,
+      trimEnd,
     };
 
     const response = await TranscriptApi.downloadVideo(body);
     if (response?.file_path) {
-      const downloadURl = `${config.apiURL}/api/download-subtitled-video?file=${response?.file_path}`;
+      const downloadURl = `${config.apiURL}/api/download-video?file=${response?.file_path}`;
       window.open(downloadURl);
     }
-
-    setProgressStatus("done");
-    setProgress(0);
-  };
-
-  const exportVideo = async () => {
-    const layerElements: TAny[] = [];
-    let videoBase64: TAny;
-    store.pages.forEach((page: PageType) => {
-      page.children.forEach((element: ElementType) => {
-        if (element.custom?.type === "transcript") {
-          // Only get subtitle from current language
-          if (element.custom?.lang === language) {
-            layerElements.push(element.toJSON());
-          }
-        } else if (element.type === "video") {
-          videoBase64 = element.src;
-        } else {
-          layerElements.push(element.toJSON());
-        }
-      });
-    });
-
-    const base64ToBlob = (base64: string, mimeType: string) => {
-      // Remove the data URL prefix (if exists)
-      const base64Data = base64.split(",")[1] || base64;
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Uint8Array(byteCharacters.length);
-
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-
-      return new Blob([byteNumbers], { type: mimeType });
-    };
-
-    const videoBlob = base64ToBlob(videoBase64, "video/mp4");
-    const videoBlobFile = new File([videoBlob], "video.mp4", {
-      type: "video/mp4",
-    });
-
-    const response = await TranscriptApi.exportVideo(
-      videoBlobFile,
-      layerElements
-    );
-    console.log(response);
 
     setProgressStatus("done");
     setProgress(0);
@@ -267,19 +261,32 @@ export const DownloadButton = observer(({ store }: Props) => {
               {selectedTranscripts.length > 0 && (
                 <>
                   <p></p>
-                  <HTMLSelect
-                    fill
-                    onChange={(e) => {
-                      setLanguage(e.target.value);
-                    }}
-                    value={language}
-                  >
-                    {selectedTranscripts.map((code: string) => (
-                      <option key={code} value={code}>
-                        {getLangByCode(code)?.name ?? ""}
-                      </option>
-                    ))}
-                  </HTMLSelect>
+                  <Checkbox
+                    checked={exportSubtitle}
+                    label="Subtitles"
+                    onChange={(e) => setExportSubtitle(e.target.checked)}
+                  />
+                  <p></p>
+                  <Checkbox
+                    checked={exportVoice}
+                    onChange={(e) => setExportVoice(e.target.checked)}
+                    label="Voice"
+                  />
+                  {(exportSubtitle || exportVoice) && (
+                    <HTMLSelect
+                      fill
+                      onChange={(e) => {
+                        setLanguage(e.target.value);
+                      }}
+                      value={language}
+                    >
+                      {selectedTranscripts.map((code: string) => (
+                        <option key={code} value={code}>
+                          {getLangByCode(code)?.name ?? ""}
+                        </option>
+                      ))}
+                    </HTMLSelect>
+                  )}
                 </>
               )}
 
@@ -331,8 +338,7 @@ export const DownloadButton = observer(({ store }: Props) => {
                     fps,
                   });
                 } else if (type === "mp4") {
-                  // await downloadVideo();
-                  await exportVideo();
+                  await downloadVideo();
                 } else {
                   if (store.pages.length < 3) {
                     store.pages.forEach((page, index) => {

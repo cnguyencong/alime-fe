@@ -21,7 +21,7 @@ export const useTimelineElements = (
       const elementStartTime =
         page.startTime + (element.animations?.[0]?.delay || 0);
 
-      const elementStartAt = element.custom?.startAt ?? element?.startTime ?? 0;
+      const elementStartAt = element.custom?.startAt ?? 0;
       const durationInPixels =
         calcPixelsPerSecond(elementDuration, config.pixelsPerSecond) ?? 50;
       const elementEndAt = element.custom?.endAt ?? elementDuration;
@@ -79,6 +79,8 @@ export const useTimelineElements = (
             store.deleteElements([element.id]);
           });
         }
+        const volume = element.custom?.volume ?? 1;
+        element.set({ volume: volume });
       }
       if (element.visible !== isInRange) {
         requestAnimationFrame(() => {

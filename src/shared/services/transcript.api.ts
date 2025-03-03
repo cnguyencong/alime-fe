@@ -93,4 +93,26 @@ export const TranscriptApi = {
       downloadLink.remove();
     }, 1000);
   },
+
+  textToSpeech: async (segments: TAny) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify(segments);
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    const response = await fetch(
+      `${config.apiURL}/api/process-tts-text`,
+      requestOptions
+    );
+
+    const result = await response.json();
+    return result;
+  },
 };

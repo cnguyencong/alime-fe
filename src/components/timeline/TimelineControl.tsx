@@ -71,11 +71,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   // Maximize video duration to avoid playback issues
   const currentPage = store.activePage;
   currentPage.set({ duration: 99999999999999 });
-  // const pageElements = currentPage.children.toJSON().map((el) => el.toJSON());
-  // const elementIds = pageElements.map((el) => el.id);
-  // console.log(elementIds);
 
-  // const elements = [];
   const elements = useTimelineElements(store, store.currentTime, isPlaying);
 
   const maxEndTime =
@@ -246,7 +242,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
                     id: element.id,
                     type: element.type,
                     custom: element.custom,
-                    // src: element.src, // Laggy
+                    //src: element.src, // Laggy
                     text: element.text,
                   }}
                   handleDragStart={handleDragStart}

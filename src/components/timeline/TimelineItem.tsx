@@ -61,7 +61,7 @@ interface ElementRendererProps {
   element: ElementType;
 }
 
-const ElementRenderer = ({ element }: ElementRendererProps) => {
+const ElementRenderer = React.memo(({ element }: ElementRendererProps) => {
   switch (element.type) {
     case "video":
       return <VideoFrames src={element.src} />;
@@ -72,7 +72,7 @@ const ElementRenderer = ({ element }: ElementRendererProps) => {
     default:
       return "";
   }
-};
+});
 
 interface TimelineItemProps {
   element: ElementType;

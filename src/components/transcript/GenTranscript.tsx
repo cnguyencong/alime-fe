@@ -96,7 +96,7 @@ const GenTranscript = ({ store }: { store: StoreType }) => {
       );
       store.activePage.addElement({
         ...textEl,
-        custom: { ...textEl?.custom, lang: language },
+        custom: { ...textEl?.custom, lang: language, isOriginal: true },
       });
     }
 
