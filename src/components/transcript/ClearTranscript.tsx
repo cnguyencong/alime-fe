@@ -1,5 +1,6 @@
 import {
   Button,
+  IconName,
   Menu,
   MenuDivider,
   MenuItem,
@@ -42,7 +43,7 @@ export const ClearTranscript = ({ store }: { store: StoreType }) => {
           {selectedTranscripts.map((code: string) => (
             <MenuItem
               key={code}
-              icon={code === language ? "tick" : ""}
+              icon={(code === language ? "tick" : "") as IconName}
               text={getLangByCode(code)?.name ?? ""}
               onClick={() => setLanguage(code)}
               shouldDismissPopover={false}

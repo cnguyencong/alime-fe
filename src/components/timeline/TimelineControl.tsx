@@ -12,6 +12,7 @@ import { TAny } from "../../shared/types/common";
 import { StoreType } from "polotno/model/store";
 import { ElementType } from "polotno/model/group-model";
 import { config } from "../../shared/constants";
+import { useTransitions } from "../../shared/zustand/transitions";
 
 const TimelineContainer = styled.div`
   position: relative;
@@ -65,6 +66,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const containerRef = useRef<TAny | null>(null);
   const [isDraggingIndicator, setIsDraggingIndicator] = useState(false);
   const [trimming, setTrimming] = useState<TAny | null>(null);
+  const { togglePlaying } = useTransitions();
 
   const currentTimeInSec = store.currentTime / 1000;
 
@@ -185,6 +187,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
+    togglePlaying(); // For transition detect
 
     if (store.currentTime > 0) {
       store.stop();
@@ -242,8 +245,8 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
                     id: element.id,
                     type: element.type,
                     custom: element.custom,
-                    //src: element.src, // Laggy
-                    text: element.text,
+                    // src: element.src, // Laggy
+                    // text: element.text,
                   }}
                   handleDragStart={handleDragStart}
                   handleTrimStart={handleTrimStart}

@@ -1,5 +1,6 @@
 import {
   Button,
+  IconName,
   Menu,
   MenuDivider,
   MenuItem,
@@ -7,15 +8,15 @@ import {
   Position,
 } from "@blueprintjs/core";
 import { StoreType } from "polotno/model/store";
-import { genTextElement } from "../../shared/utils/text";
-import { TranscriptApi } from "../../shared/services/transcript.api";
 import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
+import { TranscriptApi } from "../../shared/services/transcript.api";
+import { genTextElement } from "../../shared/utils/text";
 
-import { useState } from "react";
-import { TAny } from "../../shared/types/common";
-import { LocaleConfig } from "../../shared/constants/locale";
-import { PageType } from "polotno/model/page-model";
 import { ElementType } from "polotno/model/group-model";
+import { PageType } from "polotno/model/page-model";
+import { useState } from "react";
+import { LocaleConfig } from "../../shared/constants/locale";
+import { TAny } from "../../shared/types/common";
 
 const TranslateTranscript = ({ store }: { store: StoreType }) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -100,7 +101,7 @@ const TranslateTranscript = ({ store }: { store: StoreType }) => {
           {LocaleConfig.map((locale: TAny) => (
             <MenuItem
               key={locale.code}
-              icon={locale.code === language ? "tick" : ""}
+              icon={(locale.code === language ? "tick" : "") as IconName}
               text={locale.name}
               onClick={() => setLanguage(locale.code)}
               shouldDismissPopover={false}

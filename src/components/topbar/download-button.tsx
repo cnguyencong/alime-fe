@@ -1,27 +1,28 @@
-import React, { useState } from "react";
-import { observer } from "mobx-react-lite";
 import {
   Button,
-  Position,
-  Menu,
-  HTMLSelect,
-  Slider,
-  Popover,
-  ProgressBar,
   Checkbox,
+  HTMLSelect,
+  Menu,
+  Popover,
+  Position,
+  ProgressBar,
+  Slider,
 } from "@blueprintjs/core";
 import JSZip from "jszip";
-import { downloadFile } from "polotno/utils/download";
-import * as unit from "polotno/utils/unit";
-import { t } from "polotno/utils/l10n";
-import { StoreType } from "polotno/model/store";
-import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
-import { getLangByCode } from "../../shared/utils/common";
-import { PageType } from "polotno/model/page-model";
+import { observer } from "mobx-react-lite";
 import { ElementType } from "polotno/model/group-model";
-import { TAny } from "../../shared/types/common";
-import { TranscriptApi } from "../../shared/services/transcript.api";
+import { PageType } from "polotno/model/page-model";
+import { StoreType } from "polotno/model/store";
+import { downloadFile } from "polotno/utils/download";
+import { t } from "polotno/utils/l10n";
+import * as unit from "polotno/utils/unit";
+import React, { useState } from "react";
+import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
 import { config } from "../../shared/constants";
+import { TranscriptApi } from "../../shared/services/transcript.api";
+import { TAny } from "../../shared/types/common";
+import { getLangByCode } from "../../shared/utils/common";
+import { useTransitions } from "../../shared/zustand/transitions";
 
 type Props = Readonly<{
   store: StoreType;
@@ -41,6 +42,7 @@ export const DownloadButton = observer(({ store }: Props) => {
   const [language, setLanguage] = useState("en");
   const [exportSubtitle, setExportSubtitle] = useState(false);
   const [exportVoice, setExportVoice] = useState(false);
+  const { transitionForSegmentIds } = useTransitions();
 
   const getName = () => {
     const texts: string[] = [];
@@ -86,7 +88,7 @@ export const DownloadButton = observer(({ store }: Props) => {
     let trimEnd = 0;
 
     store.pages.forEach((page: PageType) => {
-      page.children.forEach((element: ElementType) => {
+      page.children.forEach((element: ElementType & { text: string }) => {
         if (
           element.custom?.type === "transcript" &&
           element.custom?.lang === language
@@ -96,6 +98,7 @@ export const DownloadButton = observer(({ store }: Props) => {
             start: element.custom?.start,
             end: element.custom?.end,
             text: element.text,
+            transition: transitionForSegmentIds.includes(element.custom?.id),
           });
         } else if (element.type === "video") {
           isTrimVideo = !(element.startTime === 0 && element.endTime === 1);

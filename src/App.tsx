@@ -2,27 +2,28 @@ import React from "react";
 
 import { setTranslations } from "polotno/config";
 
-import fr from "./shared/translations/fr.json";
 import en from "./shared/translations/en.json";
+import fr from "./shared/translations/fr.json";
 import id from "./shared/translations/id.json";
-import ru from "./shared/translations/ru.json";
 import ptBr from "./shared/translations/pt-br.json";
+import ru from "./shared/translations/ru.json";
 import zhCh from "./shared/translations/zh-ch.json";
 
-import { useProject } from "./shared/utils/project";
-import { observer } from "mobx-react-lite";
-import { StoreType } from "polotno/model/store";
-import { useHeight } from "./functions/hooks/use-height";
-import { loadFile } from "./shared/utils/file";
 import { Spinner } from "@blueprintjs/core";
+import { observer } from "mobx-react-lite";
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Workspace } from "polotno/canvas/workspace";
+import { StoreType } from "polotno/model/store";
+import { DEFAULT_SECTIONS, SidePanel } from "polotno/side-panel";
 import { Toolbar } from "polotno/toolbar/toolbar";
 import { ZoomButtons } from "polotno/toolbar/zoom-buttons";
-import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
+import AnimationWrapper from "./components/animation-wrapper/AnimationWrapper";
 import { TimelineControl } from "./components/timeline/TimelineControl";
-import { TranscriptTab } from "./components/transcript/TranscriptTab";
 import { DownloadButton } from "./components/topbar/download-button";
+import { TranscriptTab } from "./components/transcript/TranscriptTab";
+import { useHeight } from "./functions/hooks/use-height";
+import { loadFile } from "./shared/utils/file";
+import { useProject } from "./shared/utils/project";
 
 // load default translations
 setTranslations(en);
@@ -36,7 +37,7 @@ const sections = [...DEFAULT_SECTIONS, TranscriptTab].filter(
 );
 
 const App = observer(({ store }: Props) => {
-  console.log(store.toJSON());
+  // console.log(store.toJSON());
   const project = useProject();
   const height = useHeight();
 
@@ -110,11 +111,15 @@ const App = observer(({ store }: Props) => {
                 PageDuration: () => null,
               }}
             />
-            <Workspace
-              components={{ PageControls: () => null }}
-              renderOnlyActivePage
-              store={store}
-            />
+            <div style={{ width: "100%", height: "100%" }}>
+              <Workspace
+                components={{
+                  PageControls: AnimationWrapper,
+                }}
+                renderOnlyActivePage
+                store={store}
+              />
+            </div>
             <ZoomButtons store={store} />
             <TimelineControl store={store} />
           </WorkspaceWrap>

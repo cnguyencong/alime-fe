@@ -1,28 +1,30 @@
-import { SectionTab } from "polotno/side-panel";
-import { observer } from "mobx-react-lite";
 import {
-  Tag,
   Button,
-  EditableText,
   ButtonGroup,
   Divider,
+  EditableText,
   HTMLSelect,
+  Switch,
+  Tag,
 } from "@blueprintjs/core";
-import { FaRegListAlt } from "react-icons/fa";
-import { formatTime, getLangByCode } from "../../shared/utils/common";
-import styled from "styled-components";
-import { TAny } from "../../shared/types/common";
-import { PageType } from "polotno/model/page-model";
+import { observer } from "mobx-react-lite";
 import { ElementType } from "polotno/model/group-model";
-import GenTranscript from "./GenTranscript";
+import { PageType } from "polotno/model/page-model";
+import { SectionTab } from "polotno/side-panel";
 import { useEffect, useState } from "react";
-import { ClearTranscript } from "./ClearTranscript";
-import TranslateTranscript from "./TranslateTranscript";
+import { FaRegListAlt } from "react-icons/fa";
+import styled from "styled-components";
 import { useVideoElement } from "../../functions/hooks/useVideoElement";
-import { TranscriptApi } from "../../shared/services/transcript.api";
 import { config } from "../../shared/constants";
+import { TranscriptApi } from "../../shared/services/transcript.api";
+import { TAny } from "../../shared/types/common";
+import { formatTime, getLangByCode } from "../../shared/utils/common";
 import { useLangStore } from "../../shared/zustand/language";
+import { useTransitions } from "../../shared/zustand/transitions";
+import { ClearTranscript } from "./ClearTranscript";
 import EditTranscript from "./EditTranscript";
+import GenTranscript from "./GenTranscript";
+import TranslateTranscript from "./TranslateTranscript";
 
 const TranscriptListContainer = styled.div`
   max-height: calc(100dvh - 160px);
@@ -202,6 +204,7 @@ export const TranscriptTab = {
     const setCurrentLang = useLangStore((state: TAny) => state.setLang);
     const currentLang = useLangStore((state: TAny) => state.selectedLang);
     const [genId, setGenId] = useState("");
+    const { updateSegmentTransitions } = useTransitions();
 
     const transcriptData: TAny = [];
     store.pages.forEach((page: PageType) => {
@@ -321,10 +324,28 @@ export const TranscriptTab = {
               key={transcripts[0]?.id}
             >
               <FlexContainer>
-                <div>
-                  <span style={{ fontSize: "1.2rem", fontWeight: "500" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ fontSize: "1.2rem", fontWeight: "500" }}>
                     Speaker
-                  </span>
+                  </div>
+                  <Switch
+                    alignIndicator="right"
+                    labelElement={<em>Transition</em>}
+                    style={{ marginBottom: 0 }}
+                    onChange={() => {
+                      updateSegmentTransitions({
+                        transitionForSegmentId: transcripts[0]?.custom.id,
+                        time: transcripts[0]?.custom?.startAt,
+                      });
+                    }}
+                  />
                 </div>
               </FlexContainer>
               <Divider />
