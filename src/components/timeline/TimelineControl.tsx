@@ -12,6 +12,7 @@ import { TAny } from "../../shared/types/common";
 import { StoreType } from "polotno/model/store";
 import { ElementType } from "polotno/model/group-model";
 import { config } from "../../shared/constants";
+import { useVideoStore } from "../../shared/zustand/video";
 
 const TimelineContainer = styled.div`
   position: relative;
@@ -66,13 +67,17 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const [isDraggingIndicator, setIsDraggingIndicator] = useState(false);
   const [trimming, setTrimming] = useState<TAny | null>(null);
 
-  const currentTimeInSec = store.currentTime / 1000;
+  const play = useVideoStore((state: any) => state.play);
+  const stop = useVideoStore((state: any) => state.stop);
+  const currentTimeInSec = useVideoStore((state: any) => state.currentTime);
 
   // Maximize video duration to avoid playback issues
   const currentPage = store.activePage;
   currentPage.set({ duration: 99999999999999 });
 
-  const elements = useTimelineElements(store, store.currentTime, isPlaying);
+  const elements = useTimelineElements(store, 0, false).filter(
+    (e) => e.custom?.type !== "transcript"
+  );
 
   const maxEndTime =
     elements.length > 0
@@ -184,10 +189,12 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   }, []);
 
   const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-
-    if (store.currentTime > 0) {
-      store.stop();
+    const newState = !isPlaying;
+    setIsPlaying(newState);
+    if (newState) {
+      play();
+    } else {
+      stop();
     }
   };
 
@@ -234,23 +241,21 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
           <IndicatorHandle onMouseDown={handleIndicatorDragStart} />
         </TimelineIndicator>
         <TimelineRowWrapper>
-          {elements.map((element, _index) =>
-            element.custom?.type !== "transcript" ? (
-              <TimelineContextMenu elementId={element.id} key={element.id}>
-                <TimelineItem
-                  element={{
-                    id: element.id,
-                    type: element.type,
-                    custom: element.custom,
-                    //src: element.src, // Laggy
-                    text: element.text,
-                  }}
-                  handleDragStart={handleDragStart}
-                  handleTrimStart={handleTrimStart}
-                />
-              </TimelineContextMenu>
-            ) : null
-          )}
+          {elements.map((element, _index) => (
+            <TimelineContextMenu elementId={element.id} key={element.id}>
+              <TimelineItem
+                element={{
+                  id: element.id,
+                  type: element.type,
+                  custom: element.custom,
+                  //src: element.src, // Laggy
+                  text: element?.text,
+                }}
+                handleDragStart={handleDragStart}
+                handleTrimStart={handleTrimStart}
+              />
+            </TimelineContextMenu>
+          ))}
         </TimelineRowWrapper>
       </TimelineContainer>
     </>

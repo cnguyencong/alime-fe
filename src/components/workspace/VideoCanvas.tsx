@@ -1,0 +1,93 @@
+import { useEffect, useRef } from "react";
+import { useVideoStore } from "../../shared/zustand/video";
+
+interface VideoCanvasProps {
+  src: string;
+  currentTime: number;
+  width: number;
+  height: number;
+}
+
+const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
+  const videoRef = useRef<any>(null);
+  const canvasRef = useRef<any>(null);
+  const isPlaying = useVideoStore((state: any) => state.isPlaying);
+  const setCurrentTime = useVideoStore((state: any) => state.setCurrentTime);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    video.src = src;
+
+    // Function to draw video frames onto the canvas
+    const draw = () => {
+      if (video.paused || video.ended) return;
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      requestAnimationFrame(draw);
+    };
+
+    // Start drawing when the video starts playing
+    video.addEventListener("play", () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      draw();
+    });
+
+    // When the video metadata is loaded, extract a thumbnail
+    video.addEventListener("loadedmetadata", () => {
+      // Seek to a specific time (e.g., 1 second) to capture a frame
+      video.currentTime = 1;
+    });
+
+    // When the video seeks to the desired time, capture the frame
+    video.addEventListener("seeked", () => {
+      // Draw the video frame onto the canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    });
+
+    // Cleanup
+    return () => {
+      video.removeEventListener("play", draw);
+    };
+  }, []);
+
+  // Seek video when currentTime prop changes
+  useEffect(() => {
+    if (videoRef?.current) {
+      videoRef.current.currentTime = currentTime / 1000;
+    }
+  }, [currentTime]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      videoRef?.current.play();
+    } else {
+      videoRef?.current.pause();
+    }
+  }, [isPlaying]);
+
+  // Function to handle the timeupdate event
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  return (
+    <>
+      <video
+        onTimeUpdate={handleTimeUpdate}
+        ref={videoRef}
+        style={{ display: "none" }}
+        onEnded={() => setCurrentTime(0)}
+      />
+      <canvas style={{ width: "100%", height: "100%" }} ref={canvasRef} />
+    </>
+  );
+};
+
+export default VideoCanvas;

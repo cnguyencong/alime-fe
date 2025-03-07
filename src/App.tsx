@@ -23,6 +23,7 @@ import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
 import { TimelineControl } from "./components/timeline/TimelineControl";
 import { TranscriptTab } from "./components/transcript/TranscriptTab";
 import { DownloadButton } from "./components/topbar/download-button";
+import { MainWorkspace } from "./components/workspace/MainWorkspace";
 
 // load default translations
 setTranslations(en);
@@ -31,8 +32,17 @@ type Props = Readonly<{
   store: StoreType;
 }>;
 
+const unusedTabs = [
+  "templates",
+  "photos",
+  "elements",
+  "layers",
+  "background",
+  "size",
+];
+
 const sections = [...DEFAULT_SECTIONS, TranscriptTab].filter(
-  (section) => section.name !== "layers"
+  (section) => !unusedTabs.includes(section.name)
 );
 
 const App = observer(({ store }: Props) => {
@@ -110,12 +120,16 @@ const App = observer(({ store }: Props) => {
                 PageDuration: () => null,
               }}
             />
-            <Workspace
-              components={{ PageControls: () => null }}
-              renderOnlyActivePage
-              store={store}
-            />
-            <ZoomButtons store={store} />
+            {/* Hide default polotno workspace */}
+            <div style={{ visibility: "hidden" }}>
+              <Workspace
+                components={{ PageControls: () => null }}
+                renderOnlyActivePage
+                store={store}
+              />
+            </div>
+            <MainWorkspace store={store} />
+            {/* <ZoomButtons store={store} /> */}
             <TimelineControl store={store} />
           </WorkspaceWrap>
         </PolotnoContainer>

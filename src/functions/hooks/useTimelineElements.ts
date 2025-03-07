@@ -62,14 +62,14 @@ export const useTimelineElements = (
 
       elements.push(timelineElement);
 
-      if (shouldPlay && element.type === "video" && !element.store.isPlaying) {
-        requestAnimationFrame(() => {
-          element.store.play({
-            startTime: elementStartAt,
-            endTime: elementDuration,
-          });
-        });
-      }
+      // if (shouldPlay && element.type === "video" && !element.store.isPlaying) {
+      //   requestAnimationFrame(() => {
+      //     element.store.play({
+      //       startTime: elementStartAt,
+      //       endTime: elementDuration,
+      //     });
+      //   });
+      // }
 
       if (element.type === "video") {
         videoElIds.push(element.id);
@@ -82,11 +82,11 @@ export const useTimelineElements = (
         const volume = element.custom?.volume ?? 1;
         element.set({ volume: volume });
       }
-      if (element.visible !== isInRange) {
-        requestAnimationFrame(() => {
-          element.set({ visible: isInRange });
-        });
-      }
+      // if (element.visible !== isInRange) {
+      //   requestAnimationFrame(() => {
+      //     element.set({ visible: isInRange });
+      //   });
+      // }
     });
   });
 
