@@ -10,6 +10,10 @@ export interface TTranscriptElement extends Partial<TextElementType> {
     end: number;
     id: number;
     lang: string;
+    isOriginal?: boolean;
+    isTranscriptModified: boolean;
+    audioLength?: number;
+    audioPath?: string;
   };
 }
 
@@ -26,4 +30,9 @@ export interface TTranscriptDTO {
   segments: TTranscriptItemDTO[];
   success: boolean;
   processId?: string;
+}
+
+export interface TTextToSpeechDTO {
+  length: number;
+  outputFile: string;
 }

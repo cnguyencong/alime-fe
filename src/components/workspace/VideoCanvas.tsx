@@ -8,12 +8,14 @@ interface VideoCanvasProps {
   height: number;
 }
 
-const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
+const VideoCanvas: React.FC<VideoCanvasProps> = ({ src }) => {
   const videoRef = useRef<any>(null);
   const canvasRef = useRef<any>(null);
-  const isPlaying = useVideoStore((state: any) => state.isPlaying);
-  const setCurrentTime = useVideoStore((state: any) => state.setCurrentTime);
-  const startTime = useVideoStore((state: any) => state.startTime);
+  const isPlaying = useVideoStore((state) => state.isPlaying);
+  const setCurrentTime = useVideoStore((state) => state.setCurrentTime);
+  const startTime = useVideoStore((state) => state.startTime);
+  const ended = useVideoStore((state) => state.ended);
+  const muted = useVideoStore((state) => state.muted);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -71,6 +73,12 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
     }
   }, [isPlaying]);
 
+  useEffect(() => {
+    if (videoRef?.current) {
+      videoRef.current.muted = muted;
+    }
+  }, [muted]);
+
   // Function to handle the timeupdate event
   const handleTimeUpdate = () => {
     if (videoRef.current) {
@@ -84,7 +92,7 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
         onTimeUpdate={handleTimeUpdate}
         ref={videoRef}
         style={{ display: "none" }}
-        onEnded={() => setCurrentTime(0)}
+        onEnded={() => ended()}
       />
       <canvas style={{ width: "100%", height: "100%" }} ref={canvasRef} />
     </>

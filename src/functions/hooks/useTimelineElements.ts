@@ -10,7 +10,7 @@ export const useTimelineElements = (
   currentTime: number,
   isPlaying: boolean
 ) => {
-  const currentLang = useLangStore((state: TAny) => state.selectedLang);
+  const currentLang = useLangStore((state) => state.selectedLang);
   const elements: ElementType[] = [];
   const videoElIds: string[] = [];
 

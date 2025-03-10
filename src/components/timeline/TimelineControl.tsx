@@ -24,7 +24,7 @@ const TimelineContainer = styled.div`
 const TimelineRowWrapper = styled.div`
   position: relative;
   width: 100%;
-  height: 150px;
+  height: 200px;
   overflow-x: auto;
   overflow-y: auto;
 `;
@@ -62,14 +62,11 @@ interface TimelineControlProps {
 
 export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const [dragging, setDragging] = useState<TAny | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const containerRef = useRef<TAny | null>(null);
   const [isDraggingIndicator, setIsDraggingIndicator] = useState(false);
   const [trimming, setTrimming] = useState<TAny | null>(null);
 
-  const play = useVideoStore((state: any) => state.play);
-  const stop = useVideoStore((state: any) => state.stop);
-  const currentTimeInSec = useVideoStore((state: any) => state.currentTime);
+  const currentTimeInSec = useVideoStore((state) => state.currentTime);
 
   // Maximize video duration to avoid playback issues
   const currentPage = store.activePage;
@@ -188,16 +185,6 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
   }, []);
 
-  const handlePlayPause = () => {
-    const newState = !isPlaying;
-    setIsPlaying(newState);
-    if (newState) {
-      play();
-    } else {
-      stop();
-    }
-  };
-
   const TimelineContextMenu = ({ children, elementId }: TAny) => {
     return (
       <ContextMenu
@@ -222,12 +209,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
 
   return (
     <>
-      <TimelineHeader
-        isPlaying={isPlaying}
-        currentTime={currentTimeInSec}
-        maxTime={maxEndTime}
-        handlePlayPause={handlePlayPause}
-      />
+      <TimelineHeader currentTime={currentTimeInSec} maxTime={maxEndTime} />
 
       <TimelineContainer
         ref={containerRef}

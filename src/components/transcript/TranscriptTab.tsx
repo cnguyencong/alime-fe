@@ -17,6 +17,11 @@ import EditAllTranscript from "./EditAllTranscript";
 import { FlexContainer, TranscriptListContainer } from "./elements/CommonStyle";
 
 import TranscriptItem from "./TranscriptItem";
+import {
+  TTextToSpeechDTO,
+  TTranscriptElement,
+} from "../../shared/types/transcript";
+import { StoreType } from "polotno/model/store";
 
 export const TranscriptTab = {
   name: "transcript-panel",
@@ -26,34 +31,38 @@ export const TranscriptTab = {
     </SectionTab>
   ),
   // we need observer to update component automatically on any store changes
-  Panel: observer(({ store }: TAny) => {
-    const setCurrentLang = useLangStore((state: TAny) => state.setLang);
-    const currentLang = useLangStore((state: TAny) => state.selectedLang);
+  Panel: observer(({ store }: { store: StoreType }) => {
+    const setCurrentLang = useLangStore((state) => state.setLang);
+    const currentLang = useLangStore((state) => state.selectedLang);
 
-    const playRange = useVideoStore((state: any) => state.playRange);
+    const playRange = useVideoStore((state) => state.playRange);
+    const currentTime = useVideoStore((state) => state.currentTime);
+    const mute = useVideoStore((state) => state.mute);
+    const unmute = useVideoStore((state) => state.unmute);
 
     // Play video at the specifc duration
-    const playVideoAtRange = async (transcript: TAny) => {
+    const playVideoAtRange = async (transcript: TTranscriptElement) => {
       const startTime = transcript?.custom?.start ?? 0;
       const endTime = transcript?.custom?.end ?? 0;
       playRange(startTime, endTime);
     };
 
-    const transcriptData: TAny = [];
+    const transcriptData: TTranscriptElement[] = [];
     store.pages.forEach((page: PageType) => {
       page.children.forEach((element: ElementType) => {
         if (element.custom?.type === "transcript") {
-          transcriptData.push(element);
+          transcriptData.push(element as TTranscriptElement);
         }
       });
     });
 
     const transcriptElements = transcriptData.sort(
-      (a: TAny, b: TAny) => a.custom?.start - b.custom?.start
+      (a: TTranscriptElement, b: TTranscriptElement) =>
+        a.custom?.start - b.custom?.start
     );
 
     const groupTranscripts = transcriptElements.reduce(
-      (acc: TAny, item: TAny) => {
+      (acc: TAny, item: TTranscriptElement) => {
         const key = `${item.custom?.id}`;
         if (!acc[key]) {
           acc[key] = [];
@@ -65,9 +74,8 @@ export const TranscriptTab = {
     );
 
     const checkActiveTranscript = (startAt: number, endAt: number) => {
-      const isInRange =
-        store.currentTime >= startAt && store.currentTime <= endAt;
-      return isInRange && store.currentTime > 0;
+      const isInRange = currentTime >= startAt && currentTime <= endAt;
+      return isInRange && currentTime > 0;
     };
 
     useEffect(() => {
@@ -77,27 +85,66 @@ export const TranscriptTab = {
       }
     }, [store.currentTime]);
 
-    const textToSpeech = async (transcript: TAny) => {
-      const start = transcript?.custom?.start;
-      const end = transcript?.custom?.end;
+    const textToSpeech = async (transcript: TTranscriptElement) => {
+      if (!transcript.text) return;
+
+      const customVal = transcript?.custom;
+      const start = customVal?.start;
+      const end = customVal?.end;
       const duration = (end - start) * 1000;
       const oldLang = currentLang;
-      const transcriptLang = transcript?.custom?.lang;
+      const transcriptLang = customVal?.lang;
 
-      const segments = {
-        segments: [
-          {
-            text: transcript.text,
-            language: transcriptLang,
-            id: transcript?.custom?.id,
-            start,
-            end,
-          },
-        ],
-      };
-      const response = await TranscriptApi.textToSpeech(segments);
-      if (response?.outputFile) {
-        const audioUrl = `${config.apiURL}/api/stream-audio/${response?.outputFile}`;
+      let audioPath = customVal?.audioPath;
+
+      if (customVal?.isTranscriptModified || !audioPath) {
+        const request = {
+          text: transcript.text,
+          language: transcriptLang,
+        };
+
+        const response = await TranscriptApi.textToSpeech(request);
+        audioPath = response.outputFile;
+        updateTranscript(transcript, response);
+      }
+
+      const audioBlob = await TranscriptApi.getTranscriptAudio(audioPath);
+      const audioUrl = URL.createObjectURL(audioBlob);
+      playTranslatedVoice(
+        audioUrl,
+        duration,
+        transcriptLang,
+        transcript,
+        oldLang
+      );
+    };
+
+    const updateTranscript = (
+      transcript: TTranscriptElement,
+      response: TTextToSpeechDTO
+    ) => {
+      if (!transcript?.set) return;
+
+      transcript.set({
+        custom: {
+          ...transcript.custom,
+          audioLength: response?.length,
+          audioPath: response?.outputFile,
+          isTranscriptModified: false, // We reset it back since we got new generated audio
+        },
+      });
+    };
+
+    const playTranslatedVoice = (
+      audioUrl: string,
+      duration: number,
+      transcriptLang: string,
+      transcript: TTranscriptElement,
+      oldLang: string
+    ) => {
+      try {
+        mute(); // We mute the original video sound
+
         const audio = new Audio();
         audio.src = audioUrl;
 
@@ -113,7 +160,10 @@ export const TranscriptTab = {
         // Set the original audio back after transcript done
         setTimeout(() => {
           setCurrentLang(oldLang);
+          unmute();
         }, duration);
+      } catch (error) {
+        unmute();
       }
     };
 
@@ -129,17 +179,19 @@ export const TranscriptTab = {
           <ClearTranscript store={store} />
         </ButtonGroup>
         <TranscriptListContainer>
-          {groupTranscripts?.map((transcripts: TAny) => (
-            <TranscriptItem
-              key={transcripts[0]?.id}
-              isActive={checkActiveTranscript(
-                transcripts[0]?.custom?.startAt,
-                transcripts[0]?.custom?.endAt
-              )}
-              textToSpeech={textToSpeech}
-              transcripts={transcripts}
-            />
-          ))}
+          {groupTranscripts?.map(
+            (transcripts: TTranscriptElement[], index: number) => (
+              <TranscriptItem
+                key={index}
+                isActive={checkActiveTranscript(
+                  transcripts[0]?.custom?.start,
+                  transcripts[0]?.custom?.end
+                )}
+                textToSpeech={textToSpeech}
+                transcripts={transcripts}
+              />
+            )
+          )}
         </TranscriptListContainer>
       </div>
     );

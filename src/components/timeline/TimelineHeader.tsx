@@ -4,6 +4,7 @@ import { formatTime, getLangByCode } from "../../shared/utils/common";
 import TimelineSetting from "./TimelineSetting";
 import { useLangStore } from "../../shared/zustand/language";
 import { TAny } from "../../shared/types/common";
+import { useVideoStore } from "../../shared/zustand/video";
 
 const FlexContainer = styled.div`
   display: flex;
@@ -23,25 +24,22 @@ const TimelineHeaderContainer = styled(FlexContainer)`
 `;
 
 interface TimelineHeaderProps {
-  isPlaying: boolean;
   currentTime: number;
   maxTime: number;
-  handlePlayPause: () => void;
 }
 
-const TimelineHeader = ({
-  isPlaying,
-  currentTime,
-  maxTime,
-  handlePlayPause,
-}: TimelineHeaderProps) => {
-  const currentLang = useLangStore((state: TAny) => state.selectedLang);
+const TimelineHeader = ({ currentTime, maxTime }: TimelineHeaderProps) => {
+  const currentLang = useLangStore((state) => state.selectedLang);
+  const play = useVideoStore((state) => state.play);
+  const stop = useVideoStore((state) => state.stop);
+  const isPlaying = useVideoStore((state) => state.isPlaying);
+
   return (
     <TimelineHeaderContainer>
       <FlexContainer>
         <Button
           icon={isPlaying ? "pause" : "play"}
-          onClick={handlePlayPause}
+          onClick={() => (isPlaying ? stop() : play())}
           intent={isPlaying ? "danger" : "success"}
           text={isPlaying ? "Pause" : "Play"}
         />

@@ -1,23 +1,27 @@
 import { Button, EditableText } from "@blueprintjs/core";
-import { TAny } from "../../../shared/types/common";
 import { useVideoStore } from "../../../shared/zustand/video";
 import EditTranscript from "../EditTranscript";
 import { FlexContainer, TextContainer } from "./CommonStyle";
 import { TranscriptTime } from "./TranscriptTime";
 import { getLangByCode } from "../../../shared/utils/common";
+import { TTranscriptElement } from "../../../shared/types/transcript";
 
-const saveEdit = (value: string, transcript: TAny) => {
-  if (!value) return;
+const saveEdit = (value: string, transcript: TTranscriptElement) => {
+  if (!value || !transcript.set) return;
   transcript.set({
     text: value,
   });
 };
 
-const OriginalTranscriptItem = ({ transcript }: { transcript: TAny }) => {
-  const playRange = useVideoStore((state: any) => state.playRange);
+const OriginalTranscriptItem = ({
+  transcript,
+}: {
+  transcript: TTranscriptElement;
+}) => {
+  const playRange = useVideoStore((state) => state.playRange);
 
   // Play video at the specifc duration
-  const playVideoAtRange = async (transcript: TAny) => {
+  const playVideoAtRange = async (transcript: TTranscriptElement) => {
     const startTime = transcript?.custom?.start ?? 0;
     const endTime = transcript?.custom?.end ?? 0;
 
