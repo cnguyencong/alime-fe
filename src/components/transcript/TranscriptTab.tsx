@@ -5,7 +5,7 @@ import {
   EditableText,
   HTMLSelect,
   Switch,
-  Tag,
+  Tooltip,
 } from "@blueprintjs/core";
 import { observer } from "mobx-react-lite";
 import { ElementType } from "polotno/model/group-model";
@@ -13,18 +13,20 @@ import { PageType } from "polotno/model/page-model";
 import { SectionTab } from "polotno/side-panel";
 import { useEffect, useState } from "react";
 import { FaRegListAlt } from "react-icons/fa";
-import styled from "styled-components";
-import { useVideoElement } from "../../functions/hooks/useVideoElement";
+import styled, { css } from "styled-components";
 import { config } from "../../shared/constants";
 import { TranscriptApi } from "../../shared/services/transcript.api";
 import { TAny } from "../../shared/types/common";
 import { formatTime, getLangByCode } from "../../shared/utils/common";
 import { useLangStore } from "../../shared/zustand/language";
 import { useTransitions } from "../../shared/zustand/transitions";
+import { useVideoStore } from "../../shared/zustand/video";
 import { ClearTranscript } from "./ClearTranscript";
+import EditAllTranscript from "./EditAllTranscript";
 import EditTranscript from "./EditTranscript";
 import GenTranscript from "./GenTranscript";
 import TranslateTranscript from "./TranslateTranscript";
+import { Tag } from "react-konva";
 
 const TranscriptListContainer = styled.div`
   max-height: calc(100dvh - 160px);
@@ -45,27 +47,29 @@ const FlexContainer = styled.div`
   justify-content: space-between;
 `;
 
+const TextContainer = styled.div<{ $warning?: boolean }>`
+  position: relative;
+  margin-top: 0.5rem;
+  ${(props) =>
+    props.$warning &&
+    css`
+      border: 2px solid #fbb360;
+    `};
+
+  .bp5-popover-target {
+    display: block !important;
+  }
+`;
+
 const saveEdit = (value: string, transcript: TAny) => {
   if (!value) return;
-
-  transcript.store.set({
+  transcript.set({
     text: value,
   });
 };
 
 const formatTranscriptTime = (time: number) => {
   return formatTime(time);
-};
-
-// Play video at the specifc duration
-const playVideo = async (transcript: TAny) => {
-  const startTime = transcript.custom?.startAt ?? 0;
-  const endTime = transcript.custom?.endAt ?? 0;
-
-  transcript.store.play({
-    startTime: startTime,
-    endTime: endTime,
-  });
 };
 
 const TranscriptTime = ({ transcript }: TAny) => {
@@ -79,7 +83,6 @@ const TranscriptTime = ({ transcript }: TAny) => {
 
 const OriginalTranscriptItem = ({
   transcripts,
-  store,
 }: {
   transcripts: TAny[];
   store: TAny;
@@ -87,7 +90,16 @@ const OriginalTranscriptItem = ({
   const original = transcripts?.filter((t) => t.custom?.isOriginal);
   if (original.length === 0) return <></>;
 
+  const playRange = useVideoStore((state: any) => state.playRange);
   const originalTranscript = original[0];
+
+  // Play video at the specifc duration
+  const playVideoAtRange = async (transcript: TAny) => {
+    const startTime = transcript.custom?.startAt ?? 0;
+    const endTime = transcript.custom?.endAt ?? 0;
+
+    playRange(startTime, endTime);
+  };
 
   return (
     <div>
@@ -101,14 +113,14 @@ const OriginalTranscriptItem = ({
         </span>
         <TranscriptTime transcript={originalTranscript} />
         <Button
-          onClick={() => playVideo(originalTranscript)}
+          onClick={() => playVideoAtRange(originalTranscript)}
           icon="volume-up"
           outlined={true}
           aria-label="share"
         />
         <EditTranscript transcript={originalTranscript} />
       </FlexContainer>
-      <div style={{ padding: "0.5rem 0" }}>
+      <TextContainer>
         <EditableText
           placeholder="Edit subtitle..."
           defaultValue={originalTranscript?.text}
@@ -117,7 +129,7 @@ const OriginalTranscriptItem = ({
           maxLines={12}
           onConfirm={(value) => saveEdit(value, originalTranscript)}
         />
-      </div>
+      </TextContainer>
     </div>
   );
 };
@@ -125,12 +137,12 @@ const OriginalTranscriptItem = ({
 const OtherTranscriptItem = ({
   transcripts,
   textToSpeech,
-  store,
 }: {
   transcripts: TAny[];
   textToSpeech: TAny;
   store: TAny;
 }) => {
+  const [showWarning, setShowWarning] = useState(false);
   const others = transcripts?.filter((t) => !t.custom?.isOriginal);
   if (others.length === 0) return <></>;
 
@@ -176,17 +188,37 @@ const OtherTranscriptItem = ({
           ))}
         </HTMLSelect>
       </FlexContainer>
-      <div style={{ padding: "0.5rem 0" }}>
-        <EditableText
-          placeholder="Edit subtitle..."
-          value={transcriptText}
-          multiline={true}
-          minLines={3}
-          maxLines={12}
-          onChange={(value) => setTranscriptText(value)}
-          onConfirm={(value) => saveEdit(value, selectedTranscript)}
-        />
-      </div>
+      <TextContainer
+        onMouseEnter={() => setShowWarning(true)}
+        onMouseLeave={() => setShowWarning(false)}
+        $warning={true}
+      >
+        <Tooltip
+          content={
+            <div style={{ maxWidth: "15rem" }}>
+              <p>
+                This transcript may not match the original audio duration when
+                converted to speech. Consider shortening it for better
+                alignment!
+              </p>
+              <p>
+                Ignore this warning if you want to keep the original vocals.
+              </p>
+            </div>
+          }
+          compact={true}
+          isOpen={showWarning}
+        >
+          <EditableText
+            placeholder="Edit subtitle..."
+            defaultValue={transcriptText}
+            multiline={true}
+            minLines={3}
+            maxLines={12}
+            onConfirm={(value) => saveEdit(value, selectedTranscript)}
+          />
+        </Tooltip>
+      </TextContainer>
     </div>
   );
 };
@@ -200,11 +232,19 @@ export const TranscriptTab = {
   ),
   // we need observer to update component automatically on any store changes
   Panel: observer(({ store }: TAny) => {
-    const { videoEl } = useVideoElement({ store });
     const setCurrentLang = useLangStore((state: TAny) => state.setLang);
     const currentLang = useLangStore((state: TAny) => state.selectedLang);
-    const [genId, setGenId] = useState("");
+
+    const playRange = useVideoStore((state: any) => state.playRange);
     const { updateSegmentTransitions } = useTransitions();
+
+    // Play video at the specifc duration
+    const playVideoAtRange = async (transcript: TAny) => {
+      const startTime = transcript.custom?.startAt ?? 0;
+      const endTime = transcript.custom?.endAt ?? 0;
+
+      playRange(startTime, endTime);
+    };
 
     const transcriptData: TAny = [];
     store.pages.forEach((page: PageType) => {
@@ -246,10 +286,6 @@ export const TranscriptTab = {
     }, [store.currentTime]);
 
     const textToSpeech = async (transcript: TAny) => {
-      setGenId(transcript.id);
-      // Mute original audio
-      adjustVideoVolumn(0);
-
       const start = transcript.custom?.start;
       const end = transcript.custom?.end;
       const duration = (end - start) * 1000;
@@ -269,14 +305,13 @@ export const TranscriptTab = {
       };
       const response = await TranscriptApi.textToSpeech(segments);
       if (response?.outputFile) {
-        setGenId("");
         const audioUrl = `${config.apiURL}/api/stream-audio/${response?.outputFile}`;
         const audio = new Audio();
         audio.src = audioUrl;
 
         // Play video and translated audio at the current range
         setCurrentLang(transcriptLang);
-        playVideo(transcript);
+        playVideoAtRange(transcript);
         audio.play();
 
         audio.addEventListener("ended", () => {
@@ -285,19 +320,9 @@ export const TranscriptTab = {
 
         // Set the original audio back after transcript done
         setTimeout(() => {
-          adjustVideoVolumn(1);
           setCurrentLang(oldLang);
         }, duration);
       }
-    };
-
-    const adjustVideoVolumn = (volume: number) => {
-      videoEl?.set({
-        custom: {
-          ...videoEl?.custom,
-          volume,
-        },
-      });
     };
 
     return (
@@ -308,6 +333,7 @@ export const TranscriptTab = {
         <ButtonGroup style={{ marginBottom: "0.8rem" }}>
           <GenTranscript store={store} />
           <TranslateTranscript store={store} />
+          <EditAllTranscript store={store} />
           <ClearTranscript store={store} />
         </ButtonGroup>
         <TranscriptListContainer>

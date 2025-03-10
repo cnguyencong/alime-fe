@@ -24,27 +24,30 @@ const EditTranscript = ({ transcript }: { transcript: TAny }) => {
   const [endTime, setEndTime] = useState<number>(transcript?.custom?.end ?? 0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const udateTimeRange = () => {
+  const getUpdatedValue = () => ({
+    custom: {
+      ...transcript.custom,
+      start: startTime,
+      end: endTime,
+      startAt: startTime * 1000,
+      endAt: endTime * 1000,
+    },
+  });
+
+  const updateData = () => {
     setIsLoading(true);
-    transcript?.set({
-      custom: {
-        ...transcript.custom,
-        start: startTime,
-        end: endTime,
-        startAt: startTime * 1000,
-        endAt: endTime * 1000,
-      },
-    });
+    transcript?.set(getUpdatedValue());
 
     setTimeout(() => {
       setIsLoading(false);
     }, 5000);
   };
+
   return (
     <Popover
       content={
         <Menu>
-          <MenuDivider title="Edit transcript" />
+          <MenuDivider title="Edit time" />
           <InputGroup>
             <label htmlFor="start">Start</label>
             <input
@@ -52,7 +55,6 @@ const EditTranscript = ({ transcript }: { transcript: TAny }) => {
               id="start"
               className="bp5-input"
               type="number"
-              placeholder="Text input"
               dir="auto"
               onChange={(e) => setStartTime(+e.target.value)}
             />
@@ -63,7 +65,6 @@ const EditTranscript = ({ transcript }: { transcript: TAny }) => {
               value={endTime}
               className="bp5-input"
               type="number"
-              placeholder="Text input"
               dir="auto"
               id="end"
               onChange={(e) => setEndTime(+e.target.value)}
@@ -73,16 +74,16 @@ const EditTranscript = ({ transcript }: { transcript: TAny }) => {
             fill
             intent="primary"
             style={{ marginTop: "1rem" }}
-            onClick={udateTimeRange}
+            onClick={updateData}
             loading={isLoading}
           >
-            Save
+            Apply
           </Button>
         </Menu>
       }
       position={Position.BOTTOM_RIGHT}
     >
-      <Button icon="edit" intent="none" />
+      <Button icon="time" intent="none" />
     </Popover>
   );
 };

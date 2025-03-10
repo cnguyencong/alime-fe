@@ -62,7 +62,7 @@ export const ClearTranscript = ({ store }: { store: StoreType }) => {
       }
       position={Position.BOTTOM_RIGHT}
     >
-      <Button icon="trash" text={`Clear`} intent="none" />
+      <Button icon="trash" intent="none" />
     </Popover>
   );
 };

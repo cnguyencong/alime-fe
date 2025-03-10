@@ -24,6 +24,7 @@ import { TranscriptTab } from "./components/transcript/TranscriptTab";
 import { useHeight } from "./functions/hooks/use-height";
 import { loadFile } from "./shared/utils/file";
 import { useProject } from "./shared/utils/project";
+import { MainWorkspace } from "./components/workspace/MainWorkspace";
 
 // load default translations
 setTranslations(en);
@@ -32,8 +33,17 @@ type Props = Readonly<{
   store: StoreType;
 }>;
 
+const unusedTabs = [
+  "templates",
+  "photos",
+  "elements",
+  "layers",
+  "background",
+  "size",
+];
+
 const sections = [...DEFAULT_SECTIONS, TranscriptTab].filter(
-  (section) => section.name !== "layers"
+  (section) => !unusedTabs.includes(section.name)
 );
 
 const App = observer(({ store }: Props) => {
@@ -111,16 +121,16 @@ const App = observer(({ store }: Props) => {
                 PageDuration: () => null,
               }}
             />
-            <div style={{ width: "100%", height: "100%" }}>
+            {/* Hide default polotno workspace */}
+            <div style={{ visibility: "hidden" }}>
               <Workspace
-                components={{
-                  PageControls: AnimationWrapper,
-                }}
+                components={{ PageControls: AnimationWrapper }}
                 renderOnlyActivePage
                 store={store}
               />
             </div>
-            <ZoomButtons store={store} />
+            <MainWorkspace store={store} />
+            {/* <ZoomButtons store={store} /> */}
             <TimelineControl store={store} />
           </WorkspaceWrap>
         </PolotnoContainer>
