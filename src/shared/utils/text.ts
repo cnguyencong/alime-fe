@@ -6,7 +6,9 @@ export const genTextElement = (
   width: number,
   height: number,
   x: number,
-  y: number
+  y: number,
+  audioLength?: number,
+  audioPath?: string
 ) => {
   const duration = (end - start) * 1000; // in miliseconds
 
@@ -43,7 +45,7 @@ export const genTextElement = (
     styleEditable: true,
     text: text,
     placeholder: "",
-    fontSize: 50,
+    fontSize: 30,
     fontFamily: "Roboto",
     fontStyle: "normal",
     fontWeight: "normal",
@@ -68,6 +70,8 @@ export const genTextElement = (
       start,
       end,
       id,
+      audioLength,
+      audioPath,
     },
   };
 };

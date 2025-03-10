@@ -54,7 +54,7 @@ export const MainWorkspace = observer(({ store }: TimelineControlProps) => {
     <MainWorkspaceContainer $width={width} $height={height}>
       {videoEl?.src && (
         <VideoCanvas
-          currentTime={store.currentTime}
+          currentTime={currentTime}
           width={width}
           height={height}
           src={videoEl?.src}

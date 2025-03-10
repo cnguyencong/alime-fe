@@ -76,7 +76,7 @@ export const DownloadButton = observer(({ store }: Props) => {
   };
 
   const downloadVideo = async () => {
-    if (!store.custom?.processID) return;
+    if (!store.custom?.processId) return;
 
     setProgressStatus("scheduled");
     const segments: TAny[] = [];
@@ -111,7 +111,7 @@ export const DownloadButton = observer(({ store }: Props) => {
     });
 
     const body = {
-      processID: store.custom?.processID,
+      processId: store.custom?.processId,
       segments,
       language: language,
       isShowCaption: exportSubtitle,

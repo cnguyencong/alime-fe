@@ -1,8 +1,12 @@
 import { config } from "../constants";
 import { TAny } from "../types/common";
+import { TTranscriptDTO } from "../types/transcript";
 
 export const TranscriptApi = {
-  genTranscript: async (file: File, language = "en") => {
+  genTranscript: async (
+    file: File,
+    language = "en"
+  ): Promise<TTranscriptDTO> => {
     const formdata = new FormData();
     formdata.append("file", file);
     formdata.append("language", language);
@@ -13,12 +17,15 @@ export const TranscriptApi = {
       redirect: "follow",
     };
 
-    const response = await fetch(`${config.apiURL}/api/upload`, requestOptions);
+    const response = await fetch(
+      `${config.apiURL}/api/upload`,
+      requestOptions as any
+    );
     const result = await response.json();
     return result;
   },
 
-  translateTranscript: async (segments: TAny) => {
+  translateTranscript: async (segments: TAny): Promise<TTranscriptDTO> => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -33,7 +40,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/translate`,
-      requestOptions
+      requestOptions as any
     );
     const result = await response.json();
     return result;
@@ -54,7 +61,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/download-video`,
-      requestOptions
+      requestOptions as any
     );
     const result = await response.json();
     return result;
@@ -72,8 +79,8 @@ export const TranscriptApi = {
     };
 
     const response = await fetch(
-      `${config.api2URL}/process-video`,
-      requestOptions
+      `${config.apiURL}/process-video`,
+      requestOptions as any
     );
     const blob = await response.blob();
 
@@ -109,7 +116,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/process-tts-text`,
-      requestOptions
+      requestOptions as any
     );
 
     const result = await response.json();

@@ -12,3 +12,18 @@ export interface TTranscriptElement extends Partial<TextElementType> {
     lang: string;
   };
 }
+
+export interface TTranscriptItemDTO {
+  audioLength?: number;
+  audioPath?: string;
+  end: number;
+  id: number;
+  start: number;
+  text: string;
+}
+
+export interface TTranscriptDTO {
+  segments: TTranscriptItemDTO[];
+  success: boolean;
+  processId?: string;
+}

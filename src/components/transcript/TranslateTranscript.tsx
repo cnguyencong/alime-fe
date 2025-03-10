@@ -20,20 +20,20 @@ import { ElementType } from "polotno/model/group-model";
 const TranslateTranscript = ({ store }: { store: StoreType }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [language, setLanguage] = useState("en");
-  const segments = store?.custom?.langSegment ?? [];
+  const processId = store.custom?.processId;
   const selectedTranscripts = useTranscriptLang(store);
 
   const handleTranslateSubtitles = async () => {
-    if (segments.length === 0) return;
+    if (!processId) return;
 
     setIsGenerating(true);
     try {
       const body = {
-        segments,
+        processId,
         targetLanguage: language,
       };
       const response = await TranscriptApi.translateTranscript(body);
-      if (response.success && response.segments.length > 0) {
+      if (response.segments.length > 0) {
         removeOldTranscript();
         addTranscriptElement(response.segments);
       }
@@ -82,7 +82,9 @@ const TranslateTranscript = ({ store }: { store: StoreType }) => {
         textWidth,
         textHeight,
         textX,
-        textY
+        textY,
+        transcript?.audioLength,
+        transcript?.audioPath
       );
       store.activePage.addElement({
         ...textEl,
@@ -126,7 +128,7 @@ const TranslateTranscript = ({ store }: { store: StoreType }) => {
         text={`Translate`}
         intent="success"
         loading={isGenerating}
-        disabled={segments.length === 0}
+        disabled={!processId}
       />
     </Popover>
   );

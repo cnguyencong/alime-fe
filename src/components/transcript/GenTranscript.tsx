@@ -101,7 +101,7 @@ const GenTranscript = ({ store }: { store: StoreType }) => {
     }
 
     store.set({
-      custom: { langSegment: response.segments, processID: response.processID },
+      custom: { langSegment: response.segments, processId: response.processId },
     });
 
     store.openSidePanel("transcript-panel");

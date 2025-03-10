@@ -13,6 +13,7 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
   const canvasRef = useRef<any>(null);
   const isPlaying = useVideoStore((state: any) => state.isPlaying);
   const setCurrentTime = useVideoStore((state: any) => state.setCurrentTime);
+  const startTime = useVideoStore((state: any) => state.startTime);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -58,9 +59,9 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
   // Seek video when currentTime prop changes
   useEffect(() => {
     if (videoRef?.current) {
-      videoRef.current.currentTime = currentTime / 1000;
+      videoRef.current.currentTime = startTime;
     }
-  }, [currentTime]);
+  }, [startTime]);
 
   useEffect(() => {
     if (isPlaying) {
