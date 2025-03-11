@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { useVideoStore } from "../../shared/zustand/video";
 import { AnimatedWrapper } from "./elements/AnimatedWrapper";
 
@@ -9,7 +9,12 @@ interface VideoCanvasProps {
   height: number;
 }
 
-const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
+const VideoCanvas: React.FC<VideoCanvasProps> = ({
+  src,
+  currentTime,
+  width,
+  height,
+}) => {
   const videoRef = useRef<any>(null);
   const canvasRef = useRef<any>(null);
   const isPlaying = useVideoStore((state: any) => state.isPlaying);
@@ -80,7 +85,7 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
   };
 
   return (
-    <AnimatedWrapper>
+    <AnimatedWrapper width={width} height={height} currentTime={currentTime}>
       <video
         onTimeUpdate={handleTimeUpdate}
         ref={videoRef}

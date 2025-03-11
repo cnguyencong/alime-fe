@@ -14,6 +14,7 @@ type State = {
 type Action = {
   updateSegmentTransitions: (transition: Transition) => void;
   togglePlaying: () => void;
+  setSegmentTransition: (transition: Transition) => void;
 };
 
 export const useTransitions = create<State & Action>()(
@@ -34,6 +35,17 @@ export const useTransitions = create<State & Action>()(
             }
           : {
               segmentTransitions: [...state.segmentTransitions, transition],
+            };
+      }),
+
+    setSegmentTransition: (transition: Transition) =>
+      set((state) => {
+        return state.segmentTransitions.some(
+          (s) => s.transitionForSegmentId === transition.transitionForSegmentId
+        )
+          ? { segmentTransitions: [] }
+          : {
+              segmentTransitions: [transition],
             };
       }),
 

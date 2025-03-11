@@ -2,6 +2,21 @@ import { config } from "../constants";
 import { TAny } from "../types/common";
 import { TTranscriptDTO } from "../types/transcript";
 
+const createPostRequestOptions = ({
+  headers,
+  body,
+}: {
+  headers?: HeadersInit;
+  body: BodyInit;
+}): RequestInit => {
+  return {
+    method: "POST",
+    headers,
+    body,
+    redirect: "follow",
+  };
+};
+
 export const TranscriptApi = {
   genTranscript: async (
     file: File,
@@ -11,11 +26,7 @@ export const TranscriptApi = {
     formdata.append("file", file);
     formdata.append("language", language);
 
-    const requestOptions = {
-      method: "POST",
-      body: formdata,
-      redirect: "follow",
-    };
+    const requestOptions = createPostRequestOptions({ body: formdata });
 
     const response = await fetch(
       `${config.apiURL}/api/upload`,
@@ -31,12 +42,10 @@ export const TranscriptApi = {
 
     const raw = JSON.stringify(segments);
 
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
+    const requestOptions = createPostRequestOptions({
+      headers: { "Content-Type": "application/json" },
       body: raw,
-      redirect: "follow",
-    };
+    });
 
     const response = await fetch(
       `${config.apiURL}/api/translate`,
@@ -46,40 +55,32 @@ export const TranscriptApi = {
     return result;
   },
 
-  downloadVideo: async (segments: TAny) => {
+  exportVideo: async (segments: TAny) => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
     const raw = JSON.stringify(segments);
 
-    const requestOptions = {
-      method: "POST",
+    const requestOptions = createPostRequestOptions({
       headers: myHeaders,
       body: raw,
-      redirect: "follow",
-    };
+    });
 
     const response = await fetch(
-      `${config.apiURL}/api/download-video`,
+      `${config.apiURL}/api/export-video`,
       requestOptions as any
     );
     const result = await response.json();
     return result;
   },
 
-  exportVideo: async (file: File, body: TAny) => {
-    const formdata = new FormData();
-    formdata.append("video", file);
-    formdata.append("elements", JSON.stringify(body));
-
-    const requestOptions = {
-      method: "POST",
-      body: formdata,
-      redirect: "follow",
-    };
+  downloadVideo: async (filepath: string) => {
+    const requestOptions = createPostRequestOptions({
+      body: JSON.stringify({ filepath }),
+    });
 
     const response = await fetch(
-      `${config.apiURL}/process-video`,
+      `${config.apiURL}/api/download-video`,
       requestOptions as any
     );
     const blob = await response.blob();
@@ -107,12 +108,10 @@ export const TranscriptApi = {
 
     const raw = JSON.stringify(segments);
 
-    const requestOptions = {
-      method: "POST",
+    const requestOptions = createPostRequestOptions({
       headers: myHeaders,
       body: raw,
-      redirect: "follow",
-    };
+    });
 
     const response = await fetch(
       `${config.apiURL}/api/process-tts-text`,

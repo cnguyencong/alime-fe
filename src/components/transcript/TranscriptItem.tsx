@@ -16,11 +16,23 @@ const TranscriptItem: React.FC<TranscriptItemProps> = ({
   textToSpeech,
   transcripts,
 }) => {
-  const { updateSegmentTransitions } = useTransitions();
+  const { setSegmentTransition, segmentTransitions } = useTransitions();
   const originalTranscript = transcripts?.find((t) => t.custom?.isOriginal);
   const translatedTranscripts = transcripts?.filter(
     (t) => !t.custom?.isOriginal
   );
+  const segmentId = transcripts[0]?.custom.id;
+  const segmentStartAt = transcripts[0]?.custom?.startAt;
+  const isTransitionActive = segmentTransitions.some(
+    (s) => s.transitionForSegmentId === segmentId
+  );
+
+  const handleTransitionToggle = () => {
+    setSegmentTransition({
+      transitionForSegmentId: segmentId,
+      time: segmentStartAt,
+    });
+  };
 
   return (
     <TranscriptContainer
@@ -41,12 +53,8 @@ const TranscriptItem: React.FC<TranscriptItemProps> = ({
             alignIndicator="right"
             labelElement={<em>Transition</em>}
             style={{ marginBottom: 0 }}
-            onChange={() => {
-              updateSegmentTransitions({
-                transitionForSegmentId: transcripts[0]?.custom.id,
-                time: transcripts[0]?.custom?.startAt,
-              });
-            }}
+            checked={isTransitionActive}
+            onChange={handleTransitionToggle}
           />
         </div>
       </FlexContainer>

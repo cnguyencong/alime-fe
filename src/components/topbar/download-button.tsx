@@ -1,27 +1,29 @@
-import React, { useState } from "react";
-import { observer } from "mobx-react-lite";
 import {
   Button,
-  Position,
-  Menu,
-  HTMLSelect,
-  Slider,
-  Popover,
-  ProgressBar,
   Checkbox,
+  HTMLSelect,
+  Menu,
+  Popover,
+  Position,
+  ProgressBar,
+  Slider,
 } from "@blueprintjs/core";
 import JSZip from "jszip";
-import { downloadFile } from "polotno/utils/download";
-import * as unit from "polotno/utils/unit";
-import { t } from "polotno/utils/l10n";
-import { StoreType } from "polotno/model/store";
-import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
-import { getLangByCode } from "../../shared/utils/common";
-import { PageType } from "polotno/model/page-model";
+import { observer } from "mobx-react-lite";
 import { ElementType } from "polotno/model/group-model";
-import { TAny } from "../../shared/types/common";
-import { TranscriptApi } from "../../shared/services/transcript.api";
+import { PageType } from "polotno/model/page-model";
+import { StoreType } from "polotno/model/store";
+import { downloadFile } from "polotno/utils/download";
+import { t } from "polotno/utils/l10n";
+import * as unit from "polotno/utils/unit";
+import React, { useState } from "react";
+import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
 import { config } from "../../shared/constants";
+import { TranscriptApi } from "../../shared/services/transcript.api";
+import { TAny } from "../../shared/types/common";
+import { getLangByCode } from "../../shared/utils/common";
+import { useTransitions } from "../../shared/zustand/transition";
+import { ANIMATION_DURATION } from "../workspace/elements/AnimatedWrapper";
 
 type Props = Readonly<{
   store: StoreType;
@@ -41,6 +43,9 @@ export const DownloadButton = observer(({ store }: Props) => {
   const [language, setLanguage] = useState("en");
   const [exportSubtitle, setExportSubtitle] = useState(false);
   const [exportVoice, setExportVoice] = useState(false);
+
+  // Only allow adding 1 transition for now
+  const { segmentTransitions } = useTransitions();
 
   const getName = () => {
     const texts: string[] = [];
@@ -75,6 +80,26 @@ export const DownloadButton = observer(({ store }: Props) => {
     };
   };
 
+  const getTransitionFields = ():
+    | {
+        isUsingFrameTransition: boolean;
+        transitionStart: number;
+        transitionEnd: number;
+      }
+    | {} => {
+    if (segmentTransitions.length === 0) return {};
+    // ms to second
+    const transitionStart = (segmentTransitions[0].time ?? 0) / 1000;
+    const transitionEnd =
+      ((segmentTransitions[0].time ?? 0) + ANIMATION_DURATION) / 1000;
+
+    return {
+      isUsingFrameTransition: true,
+      transitionStart,
+      transitionEnd,
+    };
+  };
+
   const downloadVideo = async () => {
     if (!store.custom?.processId) return;
 
@@ -86,7 +111,7 @@ export const DownloadButton = observer(({ store }: Props) => {
     let trimEnd = 0;
 
     store.pages.forEach((page: PageType) => {
-      page.children.forEach((element: ElementType) => {
+      page.children.forEach((element: ElementType & { text: string }) => {
         if (
           element.custom?.type === "transcript" &&
           element.custom?.lang === language
@@ -110,6 +135,8 @@ export const DownloadButton = observer(({ store }: Props) => {
       });
     });
 
+    const transitionFields = getTransitionFields();
+
     const body = {
       processId: store.custom?.processId,
       segments,
@@ -119,12 +146,13 @@ export const DownloadButton = observer(({ store }: Props) => {
       isTrimVideo,
       trimStart,
       trimEnd,
+      ...transitionFields,
     };
 
-    const response = await TranscriptApi.downloadVideo(body);
+    const response = await TranscriptApi.exportVideo(body);
+
     if (response?.file_path) {
-      const downloadURl = `${config.apiURL}/api/download-video?file=${response?.file_path}`;
-      window.open(downloadURl);
+      await TranscriptApi.downloadVideo(response.file_path);
     }
 
     setProgressStatus("done");
