@@ -1,17 +1,18 @@
-import { useState, useRef, useEffect } from "react";
-import { observer } from "mobx-react-lite";
-import styled from "styled-components";
 import { ContextMenu, Menu, MenuItem } from "@blueprintjs/core";
+import { observer } from "mobx-react-lite";
+import { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
 
 // Components
 import TimelineHeader from "./TimelineHeader";
 import TimelineItem from "./TimelineItem";
 //Hooks
-import { useTimelineElements } from "../../functions/hooks/useTimelineElements";
-import { TAny } from "../../shared/types/common";
-import { StoreType } from "polotno/model/store";
 import { ElementType } from "polotno/model/group-model";
+import { StoreType } from "polotno/model/store";
+import { useTimelineElements } from "../../functions/hooks/useTimelineElements";
 import { config } from "../../shared/constants";
+import { TAny } from "../../shared/types/common";
+import { useTransitions } from "../../shared/zustand/transition";
 import { useVideoStore } from "../../shared/zustand/video";
 
 const TimelineContainer = styled.div`
@@ -66,6 +67,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const containerRef = useRef<TAny | null>(null);
   const [isDraggingIndicator, setIsDraggingIndicator] = useState(false);
   const [trimming, setTrimming] = useState<TAny | null>(null);
+  const { togglePlaying } = useTransitions();
 
   const play = useVideoStore((state: any) => state.play);
   const stop = useVideoStore((state: any) => state.stop);
@@ -191,6 +193,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const handlePlayPause = () => {
     const newState = !isPlaying;
     setIsPlaying(newState);
+    togglePlaying();
     if (newState) {
       play();
     } else {

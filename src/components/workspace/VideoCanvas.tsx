@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useVideoStore } from "../../shared/zustand/video";
+import { AnimatedWrapper } from "./elements/AnimatedWrapper";
 
 interface VideoCanvasProps {
   src: string;
@@ -79,7 +80,7 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
   };
 
   return (
-    <>
+    <AnimatedWrapper>
       <video
         onTimeUpdate={handleTimeUpdate}
         ref={videoRef}
@@ -87,7 +88,7 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({ src, currentTime }) => {
         onEnded={() => setCurrentTime(0)}
       />
       <canvas style={{ width: "100%", height: "100%" }} ref={canvasRef} />
-    </>
+    </AnimatedWrapper>
   );
 };
 
