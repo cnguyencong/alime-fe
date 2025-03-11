@@ -72,6 +72,7 @@ export const genTextElement = (
       id,
       audioLength,
       audioPath,
+      isTranscriptModified: false,
     },
   };
 };

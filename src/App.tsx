@@ -107,7 +107,7 @@ const App = observer(({ store }: Props) => {
       }}
       onDrop={handleDrop}
     >
-      <div style={{ height: "calc(100% - 50px)" }}>
+      <div style={{ height: "100%" }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
             <SidePanel store={store} sections={sections} />

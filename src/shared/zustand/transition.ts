@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware"; // Import devtools middleware
 
 type Transition = {
-  transitionForSegmentId: string;
+  transitionForSegmentId: number;
   time?: number;
 };
 

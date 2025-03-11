@@ -12,8 +12,8 @@ import { TAny } from "../../shared/types/common";
 import { LocaleConfig } from "../../shared/constants/locale";
 
 const TimelineSetting = () => {
-  const currentLang = useLangStore((state: TAny) => state.selectedLang);
-  const setCurrentLang = useLangStore((state: TAny) => state.setLang);
+  const currentLang = useLangStore((state) => state.selectedLang);
+  const setCurrentLang = useLangStore((state) => state.setLang);
 
   return (
     <Popover

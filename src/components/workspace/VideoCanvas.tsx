@@ -1,4 +1,5 @@
-import { Fragment, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useTransitions } from "../../shared/zustand/transition";
 import { useVideoStore } from "../../shared/zustand/video";
 import { AnimatedWrapper } from "./elements/AnimatedWrapper";
 
@@ -17,9 +18,12 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({
 }) => {
   const videoRef = useRef<any>(null);
   const canvasRef = useRef<any>(null);
-  const isPlaying = useVideoStore((state: any) => state.isPlaying);
-  const setCurrentTime = useVideoStore((state: any) => state.setCurrentTime);
-  const startTime = useVideoStore((state: any) => state.startTime);
+  const isPlaying = useVideoStore((state) => state.isPlaying);
+  const setCurrentTime = useVideoStore((state) => state.setCurrentTime);
+  const startTime = useVideoStore((state) => state.startTime);
+  const ended = useVideoStore((state) => state.ended);
+  const muted = useVideoStore((state) => state.muted);
+  const { togglePlaying } = useTransitions();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -75,7 +79,14 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({
     } else {
       videoRef?.current.pause();
     }
+    togglePlaying();
   }, [isPlaying]);
+
+  useEffect(() => {
+    if (videoRef?.current) {
+      videoRef.current.muted = muted;
+    }
+  }, [muted]);
 
   // Function to handle the timeupdate event
   const handleTimeUpdate = () => {
@@ -90,7 +101,7 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({
         onTimeUpdate={handleTimeUpdate}
         ref={videoRef}
         style={{ display: "none" }}
-        onEnded={() => setCurrentTime(0)}
+        onEnded={() => ended()}
       />
       <canvas style={{ width: "100%", height: "100%" }} ref={canvasRef} />
     </AnimatedWrapper>

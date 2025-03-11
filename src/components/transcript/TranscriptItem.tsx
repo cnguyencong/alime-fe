@@ -1,5 +1,7 @@
 import { Divider, Switch } from "@blueprintjs/core";
-import { TAny } from "../../shared/types/common";
+import { useEffect } from "react";
+import { TTranscriptElement } from "../../shared/types/transcript";
+import { useLangStore } from "../../shared/zustand/language";
 import { useTransitions } from "../../shared/zustand/transition";
 import { FlexContainer, TranscriptContainer } from "./elements/CommonStyle";
 import OriginalTranscriptItem from "./elements/OriginalTranscriptItem";
@@ -7,8 +9,8 @@ import TranslatedTranscriptItem from "./elements/TranslatedTranscriptItem";
 
 interface TranscriptItemProps {
   isActive: boolean;
-  textToSpeech: TAny;
-  transcripts: TAny[];
+  textToSpeech: (transcript: TTranscriptElement) => void;
+  transcripts: TTranscriptElement[];
 }
 
 const TranscriptItem: React.FC<TranscriptItemProps> = ({
@@ -33,6 +35,16 @@ const TranscriptItem: React.FC<TranscriptItemProps> = ({
       time: segmentStartAt,
     });
   };
+
+  useEffect(() => {
+    const latestLangItem =
+      translatedTranscripts[translatedTranscripts.length - 1]?.custom?.lang ??
+      "en";
+    setCurrentLang(latestLangItem);
+  }, [translatedTranscripts.length]);
+
+  const currentLang = useLangStore((state) => state.selectedLang);
+  const setCurrentLang = useLangStore((state) => state.setLang);
 
   return (
     <TranscriptContainer
@@ -66,6 +78,8 @@ const TranscriptItem: React.FC<TranscriptItemProps> = ({
         <TranslatedTranscriptItem
           textToSpeech={textToSpeech}
           transcripts={translatedTranscripts}
+          selectedLang={currentLang}
+          setSelectedLang={setCurrentLang}
         />
       )}
     </TranscriptContainer>

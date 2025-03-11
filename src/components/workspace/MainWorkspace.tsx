@@ -8,7 +8,7 @@ import { useVideoStore } from "../../shared/zustand/video";
 import { TextElementType } from "polotno/model/text-model";
 import { TextElement } from "./elements/TextElement";
 
-import { Stage, Layer, Transformer, Text } from "react-konva";
+import { Stage, Layer } from "react-konva";
 import { useState } from "react";
 
 interface TimelineControlProps {
@@ -24,10 +24,10 @@ const MainWorkspaceContainer = styled.div<{ $width: number; $height: number }>`
 
 export const MainWorkspace = observer(({ store }: TimelineControlProps) => {
   const { videoEl } = useVideoElement({ store }) as any;
-  const currentTime = useVideoStore((state: any) => state.currentTime);
+  const currentTime = useVideoStore((state) => state.currentTime);
   const { width, height } = store;
 
-  const isPlaying = useVideoStore((state: any) => state.isPlaying);
+  const isPlaying = useVideoStore((state) => state.isPlaying);
   const visibleElements = useTimelineElements(
     store,
     currentTime * 1000,

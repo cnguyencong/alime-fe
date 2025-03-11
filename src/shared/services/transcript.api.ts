@@ -1,6 +1,6 @@
 import { config } from "../constants";
 import { TAny } from "../types/common";
-import { TTranscriptDTO } from "../types/transcript";
+import { TTextToSpeechDTO, TTranscriptDTO } from "../types/transcript";
 
 const createPostRequestOptions = ({
   headers,
@@ -102,11 +102,14 @@ export const TranscriptApi = {
     }, 1000);
   },
 
-  textToSpeech: async (segments: TAny) => {
+  textToSpeech: async (request: {
+    text: string;
+    language: string;
+  }): Promise<TTextToSpeechDTO> => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
-    const raw = JSON.stringify(segments);
+    const raw = JSON.stringify(request);
 
     const requestOptions = createPostRequestOptions({
       headers: myHeaders,
@@ -120,5 +123,26 @@ export const TranscriptApi = {
 
     const result = await response.json();
     return result;
+  },
+
+  getTranscriptAudio: async (filePath: string): Promise<Blob> => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({ filePath });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    const response = await fetch(
+      `${config.apiURL}/api/stream-audio`,
+      requestOptions as any
+    );
+    const blob = await response.blob();
+    return blob;
   },
 };

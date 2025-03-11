@@ -16,6 +16,7 @@ import { TAny } from "../../shared/types/common";
 import { LocaleConfig } from "../../shared/constants/locale";
 import { PageType } from "polotno/model/page-model";
 import { ElementType } from "polotno/model/group-model";
+import { TTranscriptItemDTO } from "../../shared/types/transcript";
 
 const TranslateTranscript = ({ store }: { store: StoreType }) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -60,7 +61,7 @@ const TranslateTranscript = ({ store }: { store: StoreType }) => {
     store.deleteElements(oldIds);
   };
 
-  const addTranscriptElement = (segments: TAny) => {
+  const addTranscriptElement = (segments: TTranscriptItemDTO[]) => {
     const canvasWidth = store.width;
     const canvasHeight = store.height;
     const fontSize = 30;
