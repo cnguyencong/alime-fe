@@ -58,6 +58,8 @@ export const MainWorkspace = observer(({ store }: TimelineControlProps) => {
           width={width}
           height={height}
           src={videoEl?.src}
+          trimStartTime={videoEl.startTime}
+          trimEndTime={videoEl.endTime}
         />
       )}
       <Stage

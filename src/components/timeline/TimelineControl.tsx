@@ -1,11 +1,11 @@
 import { ContextMenu, Menu, MenuItem } from "@blueprintjs/core";
 import { observer } from "mobx-react-lite";
 import { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
 
 // Components
 import TimelineHeader from "./TimelineHeader";
 import TimelineItem from "./TimelineItem";
+
 //Hooks
 import { ElementType } from "polotno/model/group-model";
 import { StoreType } from "polotno/model/store";
@@ -14,47 +14,13 @@ import { config } from "../../shared/constants";
 import { TAny } from "../../shared/types/common";
 import { useVideoStore } from "../../shared/zustand/video";
 
-const TimelineContainer = styled.div`
-  position: relative;
-  width: 100%;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-`;
-
-const TimelineRowWrapper = styled.div`
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow-x: auto;
-  overflow-y: auto;
-`;
-
-const TimelineIndicator = styled.div`
-  position: absolute;
-  top: 0;
-  width: 2px;
-  height: 100%;
-  background-color: #ff3333;
-  pointer-events: auto;
-  z-index: 2;
-`;
-
-const IndicatorHandle = styled.div`
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: #ff3333;
-  border-radius: 50%;
-  top: 50%;
-  left: -5px;
-  transform: translateY(-50%);
-  cursor: ew-resize;
-
-  &:hover {
-    transform: translateY(-50%) scale(1.2);
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-  }
-`;
+import TimelineRuler from "./TimelineRuler";
+import {
+  IndicatorHandle,
+  TimelineContainer,
+  TimelineIndicator,
+  TimelineRowWrapper,
+} from "./styles/TimelineControlStyle";
 
 interface TimelineControlProps {
   store: StoreType;
@@ -67,6 +33,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const [trimming, setTrimming] = useState<TAny | null>(null);
 
   const currentTimeInSec = useVideoStore((state) => state.currentTime);
+  const setCurrentTime = useVideoStore((state) => state.setCurrentTime);
 
   // Maximize video duration to avoid playback issues
   const currentPage = store.activePage;
@@ -85,6 +52,8 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     e: React.MouseEvent<HTMLDivElement>,
     element: ElementType
   ) => {
+    if (element.type === "video") return;
+
     e.preventDefault();
     const container = containerRef.current.getBoundingClientRect();
     const elementX = e.clientX - container.left;
@@ -100,14 +69,14 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     const container = containerRef.current.getBoundingClientRect();
     const offsetX = e.clientX - container.left;
     setIsDraggingIndicator(true);
-    store.setCurrentTime(offsetX);
+    setCurrentTime(offsetX / config.pixelsPerSecond);
   };
 
   const handleIndicatorDragMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDraggingIndicator) {
       const container = containerRef.current.getBoundingClientRect();
       const newX = Math.max(0, e.clientX - container.left);
-      store.setCurrentTime(newX * 100);
+      setCurrentTime(newX / config.pixelsPerSecond);
     }
   };
 
@@ -130,24 +99,25 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
         },
       });
     } else if (trimming) {
-      const deltaX = e.clientX - trimming.startX;
-      const deltaTime = deltaX / config.pixelsPerSecond;
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const offsetX = e.clientX - containerRect.left;
+      const newTime = Math.max(
+        0,
+        Math.min(trimming.originalDuration, offsetX / config.pixelsPerSecond)
+      );
+
+      function normalize(value: number, max: number): number {
+        return value / max;
+      }
+      const scaleTime = normalize(newTime, trimming.originalDuration / 1000);
 
       if (trimming.side === "left") {
-        const newStartTime = Math.max(
-          0,
-          trimming.originalStartTime + deltaTime
-        );
-        const maxStartTime = trimming.originalEndTime - 1;
-
         element?.set({
-          startTime: Math.min(newStartTime, maxStartTime),
+          startTime: Math.max(scaleTime, 0),
         });
       } else {
-        const newEndTime = Math.min(1, trimming.originalEndTime + deltaTime);
-        const minEndTime = trimming.originalStartTime + 1; // Minimum 1 second duration
         element?.set({
-          endTime: Math.max(newEndTime, minEndTime),
+          endTime: Math.min(scaleTime, 1),
         });
       }
     }
@@ -169,9 +139,9 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
       element,
       side,
       startX: e.clientX,
-      originalStartTime: element.startTime,
-      originalEndTime: element.endTime,
-      originalDuration: element.duration,
+      originalStartTime: element?.custom?.startAt,
+      originalEndTime: element?.custom?.endAt,
+      originalDuration: element?.custom?.duration,
     });
   };
 
@@ -210,7 +180,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   return (
     <>
       <TimelineHeader currentTime={currentTimeInSec} maxTime={maxEndTime} />
-
+      <TimelineRuler duration={maxEndTime / 1000} />
       <TimelineContainer
         ref={containerRef}
         onMouseMove={handleMouseMove}
@@ -230,7 +200,6 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
                   id: element.id,
                   type: element.type,
                   custom: element.custom,
-                  //src: element.src, // Laggy
                   text: element?.text,
                 }}
                 handleDragStart={handleDragStart}

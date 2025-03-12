@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { formatTime, getLangByCode } from "../../shared/utils/common";
 import TimelineSetting from "./TimelineSetting";
 import { useLangStore } from "../../shared/zustand/language";
-import { TAny } from "../../shared/types/common";
 import { useVideoStore } from "../../shared/zustand/video";
 
 const FlexContainer = styled.div`

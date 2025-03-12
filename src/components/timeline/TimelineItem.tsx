@@ -1,61 +1,14 @@
-import styled from "styled-components";
 import VideoFrames from "./elements/VideoFrame";
 import TextElement from "./elements/TextElement";
 import ImageElement from "./elements/ImageElement";
 import { ElementType } from "polotno/model/group-model";
 import React from "react";
-
-const TimelineRow = styled.div`
-  position: relative;
-  height: 55px;
-  border-bottom: 1px solid #ddd;
-`;
-
-const Item = styled.div`
-  position: absolute;
-  height: 45px;
-  top: 5px;
-  background: #252a31;
-  border-radius: 3px;
-  cursor: move;
-  user-select: none;
-  color: white;
-  font-size: 12px;
-  padding: 1px;
-  overflow: hidden;
-
-  &:hover {
-    background: #2b95d6;
-  }
-`;
-
-const TrimHandleLeft = styled.div`
-  position: absolute;
-  width: 8px;
-  height: 100%;
-  top: 0;
-  left: 0;
-  cursor: w-resize;
-  background: rgba(255, 255, 255, 0.2);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.4);
-  }
-`;
-
-const TrimHandleRight = styled.div`
-  position: absolute;
-  width: 8px;
-  height: 100%;
-  top: 0;
-  right: 0;
-  cursor: e-resize;
-  background: rgba(255, 255, 255, 0.2);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.4);
-  }
-`;
+import {
+  Item,
+  TimelineRow,
+  TrimHandleLeft,
+  TrimHandleRight,
+} from "./styles/TimelineItemStyle";
 
 interface ElementRendererProps {
   element: ElementType;
@@ -93,7 +46,7 @@ const TimelineItem = React.memo(
       <TimelineRow key={element.id}>
         <Item
           style={{
-            left: `${element.custom?.startAt}px`,
+            left: `${element.custom?.offsetLeft}px`,
             width: `${element.custom?.width}px`,
           }}
           onMouseDown={(e) => {

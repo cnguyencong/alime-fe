@@ -4,7 +4,7 @@ import { ElementType } from "polotno/model/group-model";
 import { PageType } from "polotno/model/page-model";
 import { config } from "../../shared/constants";
 import { useLangStore } from "../../shared/zustand/language";
-import { TAny } from "../../shared/types/common";
+
 export const useTimelineElements = (
   store: StoreType,
   currentTime: number,
@@ -18,14 +18,18 @@ export const useTimelineElements = (
     page.children.forEach((element: ElementType) => {
       const elementDuration =
         element.custom?.duration ?? element?.duration ?? config.defaultDuration;
-      const elementStartTime =
-        page.startTime + (element.animations?.[0]?.delay || 0);
+      const elementStartTime = element.startTime ?? 0;
 
       const elementStartAt = element.custom?.startAt ?? 0;
       const durationInPixels =
         calcPixelsPerSecond(elementDuration, config.pixelsPerSecond) ?? 50;
       const elementEndAt = element.custom?.endAt ?? elementDuration;
-      const elementWidth = element.type === "video" ? durationInPixels : 50;
+      let elementWidth = durationInPixels;
+
+      if (element.type === "video") {
+        const scaleTime = element.endTime - element.startTime;
+        elementWidth = durationInPixels * scaleTime;
+      }
 
       let isInRange =
         currentTime >= elementStartAt && currentTime <= elementEndAt;
@@ -38,12 +42,18 @@ export const useTimelineElements = (
         isInRange = false;
       }
 
+      const durationInSec = elementDuration / 1000;
+      const offsetLeft =
+        (elementStartAt + elementStartTime * durationInSec) *
+        config.pixelsPerSecond;
+
       const customValue = {
         ...element?.custom,
         startAt: elementStartAt,
         endAt: elementEndAt,
         width: elementWidth,
         duration: elementDuration,
+        offsetLeft: offsetLeft,
       };
 
       const timelineElement = {
@@ -62,15 +72,6 @@ export const useTimelineElements = (
 
       elements.push(timelineElement);
 
-      // if (shouldPlay && element.type === "video" && !element.store.isPlaying) {
-      //   requestAnimationFrame(() => {
-      //     element.store.play({
-      //       startTime: elementStartAt,
-      //       endTime: elementDuration,
-      //     });
-      //   });
-      // }
-
       if (element.type === "video") {
         videoElIds.push(element.id);
         // Only allow one video element to be played at a time
@@ -79,14 +80,7 @@ export const useTimelineElements = (
             store.deleteElements([element.id]);
           });
         }
-        const volume = element.custom?.volume ?? 1;
-        element.set({ volume: volume });
       }
-      // if (element.visible !== isInRange) {
-      //   requestAnimationFrame(() => {
-      //     element.set({ visible: isInRange });
-      //   });
-      // }
     });
   });
 

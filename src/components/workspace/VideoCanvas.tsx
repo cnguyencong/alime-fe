@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTransitions } from "../../shared/zustand/transition";
 import { useVideoStore } from "../../shared/zustand/video";
 import { AnimatedWrapper } from "./elements/AnimatedWrapper";
@@ -8,6 +8,8 @@ interface VideoCanvasProps {
   currentTime: number;
   width: number;
   height: number;
+  trimStartTime: number;
+  trimEndTime: number;
 }
 
 const VideoCanvas: React.FC<VideoCanvasProps> = ({
@@ -15,15 +17,19 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({
   currentTime,
   width,
   height,
+  trimStartTime,
+  trimEndTime,
 }) => {
   const videoRef = useRef<any>(null);
   const canvasRef = useRef<any>(null);
   const isPlaying = useVideoStore((state) => state.isPlaying);
+  const isPlayingRange = useVideoStore((state) => state.isPlayingRange);
   const setCurrentTime = useVideoStore((state) => state.setCurrentTime);
   const startTime = useVideoStore((state) => state.startTime);
   const ended = useVideoStore((state) => state.ended);
   const muted = useVideoStore((state) => state.muted);
   const { togglePlaying } = useTransitions();
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -51,7 +57,8 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({
     // When the video metadata is loaded, extract a thumbnail
     video.addEventListener("loadedmetadata", () => {
       // Seek to a specific time (e.g., 1 second) to capture a frame
-      video.currentTime = 1;
+      video.currentTime = trimStartTime * duration;
+      setDuration(video.duration);
     });
 
     // When the video seeks to the desired time, capture the frame
@@ -66,15 +73,37 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({
     };
   }, []);
 
-  // Seek video when currentTime prop changes
+  const handleTrimStartTime = () => {
+    if (videoRef?.current && !isPlayingRange) {
+      videoRef.current.currentTime = trimStartTime * duration;
+    }
+  };
+
+  // Play video at timerange
   useEffect(() => {
     if (videoRef?.current) {
       videoRef.current.currentTime = startTime;
     }
-  }, [startTime]);
+  }, [startTime, isPlayingRange]);
+
+  // Set video current time to map with trimStartTime
+  useEffect(() => {
+    handleTrimStartTime();
+  }, [trimStartTime, isPlayingRange]);
+
+  // Set video current time to map with trimEndTime
+  useEffect(() => {
+    if (videoRef?.current && !isPlayingRange) {
+      const trimEndTimeInSec = trimEndTime * duration;
+      if (trimEndTimeInSec <= currentTime) {
+        videoRef?.current.pause();
+      }
+    }
+  }, [trimEndTime, currentTime, isPlayingRange]);
 
   useEffect(() => {
     if (isPlaying) {
+      handleTrimStartTime();
       videoRef?.current.play();
     } else {
       videoRef?.current.pause();
