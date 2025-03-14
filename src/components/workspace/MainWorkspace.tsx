@@ -80,6 +80,7 @@ export const MainWorkspace = observer(({ store }: TimelineControlProps) => {
                   key={e.id}
                   onSelect={() => {
                     setSelectedId(e.id);
+                    store.selectElements([e.id]);
                   }}
                   onChange={(newAttrs: TextElementType) => {
                     updateLayerElement(newAttrs);

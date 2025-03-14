@@ -104,14 +104,10 @@ export const VideosPanel = ({ store }: Props) => {
   );
 };
 
-// define the new custom section
+// Currently we dont need this video section
 export const VideosSection = {
   name: "videos",
-  Tab: (props: React.ComponentProps<TAny>) => (
-    <SectionTab name="Videos" {...props}>
-      <Video />
-    </SectionTab>
-  ),
+  Tab: () => null,
   // we need observer to update component automatically on any store changes
-  Panel: VideosPanel,
+  Panel: () => null,
 };

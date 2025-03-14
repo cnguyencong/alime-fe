@@ -31,6 +31,8 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const [isDraggingIndicator, setIsDraggingIndicator] = useState(false);
   const [trimming, setTrimming] = useState<TAny | null>(null);
 
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+
   // Handle time indicator
   const wrapperRef = useRef<TAny>(null);
   const [wrapperScrollLeft, setWrapperScrollLeft] = useState(0);
@@ -239,7 +241,6 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
           {elements.length > 0 && (
             <TimelineRuler duration={maxEndTime / 1000} />
           )}
-
           <TimelineIndicator
             style={{
               left: `${currentTimeInSec * config.pixelsPerSecond}px`,
@@ -248,9 +249,9 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
           >
             <IndicatorHandle onMouseDown={handleIndicatorDragStart} />
           </TimelineIndicator>
-
           {elements.map((element) => (
             <TimelineItem
+              key={element.id}
               element={{
                 id: element.id,
                 type: element.type,
@@ -258,6 +259,8 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
                 text: element?.text,
                 src: element?.src,
               }}
+              selectedItemId={selectedItemId}
+              setSelectedItemId={setSelectedItemId}
               handleDragStart={handleDragStart}
               handleTrimStart={handleTrimStart}
             />

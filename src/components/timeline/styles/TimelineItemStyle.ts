@@ -4,6 +4,34 @@ export const TimelineRow = styled.div`
   position: relative;
   height: 55px;
   border-bottom: 1px solid #ddd;
+
+  &.selected {
+    .timeline-item {
+      outline: 4px solid #1265d9;
+    }
+
+    .action-layer {
+      display: flex;
+      gap: 10px;
+      button {
+        display: inline-block !important;
+        width: auto !important;
+      }
+    }
+  }
+`;
+
+export const ItemActionLayer = styled.div`
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  display: none;
+  transform: translateY(-50%);
+
+  button {
+    min-height: 10px;
+    border-radius: 10px;
+  }
 `;
 
 export const Item = styled.div`
@@ -17,11 +45,12 @@ export const Item = styled.div`
   color: white;
   font-size: 12px;
   padding: 1px;
-  overflow: hidden;
+  overflow: clip;
 
   &:hover {
-    background: #2b95d6;
+    background: rgba(128, 128, 128, .4);
   }
+}
 `;
 
 export const TrimHandleLeft = styled.div`

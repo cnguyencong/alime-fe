@@ -15,15 +15,17 @@ import { observer } from "mobx-react-lite";
 import { StoreType } from "polotno/model/store";
 import { useHeight } from "./functions/hooks/use-height";
 import { loadFile } from "./shared/utils/file";
-import { Spinner } from "@blueprintjs/core";
+
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Workspace } from "polotno/canvas/workspace";
 import { Toolbar } from "polotno/toolbar/toolbar";
 import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
 import { TimelineControl } from "./components/timeline/TimelineControl";
 import { TranscriptTab } from "./components/transcript/TranscriptTab";
-import { DownloadButton } from "./components/topbar/download-button";
 import { MainWorkspace } from "./components/workspace/MainWorkspace";
+import LoadingOverlay from "./components/common/LoadingOverlay";
+import { VideosSection } from "./components/sections/video-section";
+import { ToolbarControls } from "./toolbar-controls";
 
 // load default translations
 setTranslations(en);
@@ -36,12 +38,12 @@ const unusedTabs = [
   "templates",
   // "photos",
   "elements",
-  // "layers",
+  "layers",
   "background",
   "size",
 ];
 
-const sections = [...DEFAULT_SECTIONS, TranscriptTab].filter(
+const sections = [...DEFAULT_SECTIONS, TranscriptTab, VideosSection].filter(
   (section) => !unusedTabs.includes(section.name)
 );
 
@@ -50,15 +52,7 @@ const App = observer(({ store }: Props) => {
   const project = useProject();
   const height = useHeight();
 
-  // React.useEffect(() => {
-  //   const workspaceContainer = document.querySelector(
-  //     ".polotno-workspace-container"
-  //   );
-  //   if (workspaceContainer) {
-  //     const width = workspaceContainer.clientWidth;
-  //     store.setSize(width, height, true);
-  //   }
-  // }, [height]);
+  console.log(sections);
 
   React.useEffect(() => {
     if (project.language.startsWith("fr")) {
@@ -109,52 +103,27 @@ const App = observer(({ store }: Props) => {
       <div style={{ height: "100%" }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
-            <SidePanel store={store} sections={sections} />
+            <SidePanel
+              store={store}
+              sections={sections}
+              defaultSection="upload"
+            />
           </SidePanelWrap>
           <WorkspaceWrap>
-            <Toolbar
-              store={store}
-              components={{
-                ActionControls: DownloadButton,
-                PageDuration: () => null,
-              }}
-            />
-            {/* Hide default polotno workspace */}
+            <Toolbar store={store} components={ToolbarControls} />
+            {/* This default polotno workspace is hidden */}
             <Workspace
               components={{ PageControls: () => null }}
               renderOnlyActivePage
               store={store}
             />
+            {/* Main workspace of this app */}
             <MainWorkspace store={store} />
             <TimelineControl store={store} />
           </WorkspaceWrap>
         </PolotnoContainer>
       </div>
-      {project.status === "loading" && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              color: "white",
-            }}
-          >
-            <Spinner />
-          </div>
-        </div>
-      )}
+      {project.status === "loading" && <LoadingOverlay />}
     </div>
   );
 });

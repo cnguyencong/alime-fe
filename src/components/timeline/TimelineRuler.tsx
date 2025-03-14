@@ -35,7 +35,7 @@ const TimelineRuler: React.FC<TimelineRulerProps> = ({ duration }) => {
       {ticks.map((tick) => (
         <React.Fragment key={tick.time}>
           <RulerTick
-            tickSize={tick.tickSize}
+            $tickSize={tick.tickSize}
             style={{ left: `${tick.position}px` }}
           />
           {tick.tickSize === "large" && (

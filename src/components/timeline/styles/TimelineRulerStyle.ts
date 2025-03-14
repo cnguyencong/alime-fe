@@ -6,31 +6,29 @@ export const TimelineRulerContainer = styled.div`
   top: 0;
   left: 0;
   background: white;
-  z-index: 1;
+  z-index: 10;
 `;
 
-interface TickProps {
-  tickSize: "small" | "medium" | "large";
-}
-
-export const RulerTick = styled.div<TickProps>`
+export const RulerTick = styled.div<{
+  $tickSize: "small" | "medium" | "large";
+}>`
   position: absolute;
   bottom: 0;
   width: 1px;
   background-color: #333;
 
   ${(props) =>
-    props.tickSize === "small" &&
+    props.$tickSize === "small" &&
     css`
       height: 10px;
     `}
   ${(props) =>
-    props.tickSize === "medium" &&
+    props.$tickSize === "medium" &&
     css`
       height: 15px;
     `}
   ${(props) =>
-    props.tickSize === "large" &&
+    props.$tickSize === "large" &&
     css`
       height: 20px;
     `}
