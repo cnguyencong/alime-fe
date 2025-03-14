@@ -6,7 +6,7 @@ import {
   Position,
 } from "@blueprintjs/core";
 import styled from "styled-components";
-import { TAny } from "../../shared/types/common";
+import { TAny } from "../../../shared/types/common";
 import { useState } from "react";
 
 const InputGroup = styled.div`

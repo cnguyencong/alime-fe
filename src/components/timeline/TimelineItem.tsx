@@ -17,7 +17,7 @@ interface ElementRendererProps {
 const ElementRenderer = React.memo(({ element }: ElementRendererProps) => {
   switch (element.type) {
     case "video":
-      return <VideoFrames src={element.src} />;
+      return <VideoFrames id={element.id} src={element.src} />;
     case "text":
       return <TextElement text={element.text} />;
     case "image":
@@ -45,6 +45,13 @@ const TimelineItem = React.memo(
     return (
       <TimelineRow key={element.id}>
         <Item
+          onContextMenu={(e) => {
+            e.preventDefault();
+            window.store.selectElements([element.id]);
+          }}
+          onBlur={() => {
+            window.store.selectElements([""]);
+          }}
           style={{
             left: `${element.custom?.offsetLeft}px`,
             width: `${element.custom?.width}px`,

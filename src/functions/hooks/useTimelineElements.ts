@@ -7,7 +7,7 @@ import { useLangStore } from "../../shared/zustand/language";
 
 export const useTimelineElements = (
   store: StoreType,
-  currentTime: number,
+  currentTime: number, // In milisecond
   isPlaying: boolean
 ) => {
   const currentLang = useLangStore((state) => state.selectedLang);
@@ -21,6 +21,7 @@ export const useTimelineElements = (
       const elementStartTime = element.startTime ?? 0;
 
       const elementStartAt = element.custom?.startAt ?? 0;
+
       const durationInPixels =
         calcPixelsPerSecond(elementDuration, config.pixelsPerSecond) ?? 50;
       const elementEndAt = element.custom?.endAt ?? elementDuration;
@@ -43,8 +44,9 @@ export const useTimelineElements = (
       }
 
       const durationInSec = elementDuration / 1000;
+      const elementStartAtInSec = elementStartAt / 1000;
       const offsetLeft =
-        (elementStartAt + elementStartTime * durationInSec) *
+        (elementStartAtInSec + elementStartTime * durationInSec) *
         config.pixelsPerSecond;
 
       const customValue = {
@@ -65,7 +67,6 @@ export const useTimelineElements = (
         duration: elementDuration,
         isPlaying: shouldPlay,
         src: element?.src,
-        element: element,
         custom: customValue,
         visible: isInRange,
       };

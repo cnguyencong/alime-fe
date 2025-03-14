@@ -49,7 +49,7 @@ const TimelineHeader = ({ currentTime, maxTime }: TimelineHeaderProps) => {
         </PlayerTime>
         <TimelineSetting />
         <span style={{ color: "white" }}>
-          {getLangByCode(currentLang)?.name}
+          Subtitle: <strong>{getLangByCode(currentLang)?.name}</strong>
         </span>
       </FlexContainer>
     </TimelineHeaderContainer>

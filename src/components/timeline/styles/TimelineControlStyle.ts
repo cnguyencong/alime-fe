@@ -7,12 +7,15 @@ export const TimelineContainer = styled.div`
   border: 1px solid #ddd;
 `;
 
+const TimelineRowWrapperHeight = 200; // Set Height of timeline
+
 export const TimelineRowWrapper = styled.div`
   position: relative;
   width: 100%;
-  height: 160px;
+  height: ${TimelineRowWrapperHeight}px;
   overflow-x: auto;
   overflow-y: auto;
+  user-select: none;
 `;
 
 export const TimelineIndicator = styled.div`

@@ -5,15 +5,14 @@ import { FaRegListAlt } from "react-icons/fa";
 import { TAny } from "../../shared/types/common";
 import { PageType } from "polotno/model/page-model";
 import { ElementType } from "polotno/model/group-model";
-import GenTranscript from "./GenTranscript";
+import GenTranscript from "./actions/GenTranscript";
 import { useEffect } from "react";
-import { ClearTranscript } from "./ClearTranscript";
-import TranslateTranscript from "./TranslateTranscript";
+import { ClearTranscript } from "./actions/ClearTranscript";
+import TranslateTranscript from "./actions/TranslateTranscript";
 import { TranscriptApi } from "../../shared/services/transcript.api";
-import { config } from "../../shared/constants";
 import { useLangStore } from "../../shared/zustand/language";
 import { useVideoStore } from "../../shared/zustand/video";
-import EditAllTranscript from "./EditAllTranscript";
+import EditAllTranscript from "./actions/EditAllTranscript";
 import { FlexContainer, TranscriptListContainer } from "./elements/CommonStyle";
 
 import TranscriptItem from "./TranscriptItem";
@@ -83,7 +82,7 @@ export const TranscriptTab = {
       if (activeTranscript) {
         activeTranscript.scrollIntoView({ behavior: "smooth" });
       }
-    }, [store.currentTime]);
+    }, [currentTime]);
 
     const textToSpeech = async (transcript: TTranscriptElement) => {
       if (!transcript.text) return;

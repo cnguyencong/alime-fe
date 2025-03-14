@@ -10,6 +10,9 @@ import { TextElement } from "./elements/TextElement";
 
 import { Stage, Layer } from "react-konva";
 import { useState } from "react";
+import ImageElement from "./elements/ImageElement";
+import { ImageElementType } from "polotno/model/image-model";
+import { ElementType } from "polotno/model/group-model";
 
 interface TimelineControlProps {
   store: StoreType;
@@ -35,17 +38,17 @@ export const MainWorkspace = observer(({ store }: TimelineControlProps) => {
   ).filter((e) => e.visible && e.type !== "video");
 
   // Konva
-  const [selectedId, selectShape] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
   const checkDeselect = (e: any) => {
     // deselect when clicked on empty area
     const clickedOnEmpty = e.target === e.target.getStage();
     if (clickedOnEmpty) {
-      selectShape(null);
+      setSelectedId(null);
     }
   };
 
-  const updateLayerElement = (newAttrs: TextElementType) => {
+  const updateLayerElement = (newAttrs: ElementType) => {
     const currentEl = store.getElementById(newAttrs.id);
     currentEl?.set({ ...newAttrs });
   };
@@ -71,23 +74,36 @@ export const MainWorkspace = observer(({ store }: TimelineControlProps) => {
       >
         <Layer>
           {visibleElements.map((e) => {
-            switch (e.type) {
-              case "text":
-                const textEl = e as TextElementType;
-                return (
-                  <TextElement
-                    onSelect={() => {
-                      selectShape(e.id);
-                    }}
-                    onChange={(newAttrs: TextElementType) => {
-                      updateLayerElement(newAttrs);
-                    }}
-                    isSelected={e.id === selectedId}
-                    textEl={textEl}
-                  />
-                );
-              default:
-                return "";
+            if (e.type === "text") {
+              return (
+                <TextElement
+                  key={e.id}
+                  onSelect={() => {
+                    setSelectedId(e.id);
+                  }}
+                  onChange={(newAttrs: TextElementType) => {
+                    updateLayerElement(newAttrs);
+                  }}
+                  isSelected={e.id === selectedId}
+                  textEl={e as TextElementType}
+                />
+              );
+            } else if (e.type === "image") {
+              return (
+                <ImageElement
+                  key={e.id}
+                  onSelect={() => {
+                    setSelectedId(e.id);
+                  }}
+                  onChange={(newAttrs: ImageElementType) => {
+                    updateLayerElement(newAttrs);
+                  }}
+                  isSelected={e.id === selectedId}
+                  imageEl={e as ImageElementType}
+                />
+              );
+            } else {
+              return "";
             }
           })}
         </Layer>

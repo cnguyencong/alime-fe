@@ -1,15 +1,20 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { config } from "../../../shared/constants";
+
+// Capture 1 frame every 5 seconds
+const FRAME_INTERVAL_IN_SECONDS = 5;
 
 interface VideoFramesProps {
+  id: string;
   src: string;
 }
 
-const maxFrames = 100;
 const VideoFrames = React.memo(({ src }: VideoFramesProps) => {
-  const [frames, setFrames] = useState<string[]>([]);
+  const [frames, setFrames] = React.useState<string[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
+    if (!src || frames.length > 0) return;
+
     const video = document.createElement("video");
     video.src = src;
     video.crossOrigin = "anonymous"; // Ensure CORS is handled if needed
@@ -17,25 +22,39 @@ const VideoFrames = React.memo(({ src }: VideoFramesProps) => {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-    const captureFrame = (time: number) => {
+    const captureFrame = (time: number): Promise<string> => {
       return new Promise((resolve) => {
         video.currentTime = time;
+
         video.onseeked = () => {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL("image/jpeg"));
+          const frameData = canvas.toDataURL("image/jpeg");
+          resolve(frameData);
         };
       });
     };
 
     const extractFrames = async () => {
       const duration = video.duration;
-      const frameCount = Math.min(maxFrames, Math.ceil(duration / 10)); // Calculate frames based on duration
-      const interval = duration / Math.max(frameCount, 1); // Ensure we don't divide by zero
+
+      if (!duration || duration === Infinity) {
+        console.warn("Video duration is invalid: ", duration);
+        return;
+      }
+
+      const frameTimes: number[] = [];
+
+      // Collect times at every 5-second interval
+      for (let time = 0; time < duration; time += FRAME_INTERVAL_IN_SECONDS) {
+        frameTimes.push(time);
+      }
+
+      // Capture frames at those times
       const capturedFrames: string[] = [];
 
-      for (let i = 0; i < frameCount; i++) {
-        const frame = await captureFrame(i * interval);
-        capturedFrames.push(frame as string);
+      for (let time of frameTimes) {
+        const frame = await captureFrame(time);
+        capturedFrames.push(frame);
       }
 
       setFrames(capturedFrames);
@@ -44,25 +63,32 @@ const VideoFrames = React.memo(({ src }: VideoFramesProps) => {
     video.onloadedmetadata = () => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
+
       extractFrames();
     };
 
     return () => {
       video.src = ""; // Clean up video source
     };
-  }, [src]);
+  }, [frames, src]);
 
   return (
-    <div style={{ display: "flex" }}>
-      {frames.map((frame, i) => (
-        <img
-          key={i}
-          src={frame}
-          alt={`Frame ${i}`}
-          style={{ width: "45px", height: "45px", marginRight: "2px" }}
-        />
-      ))}
-    </div>
+    frames && (
+      <div style={{ display: "flex" }}>
+        {frames.map((frame, i) => (
+          <img
+            key={i}
+            src={frame}
+            alt={`Frame ${i}`}
+            style={{
+              width: `${FRAME_INTERVAL_IN_SECONDS * config.pixelsPerSecond}px`,
+              height: `50px`,
+              marginRight: "2px",
+            }}
+          />
+        ))}
+      </div>
+    )
   );
 });
 

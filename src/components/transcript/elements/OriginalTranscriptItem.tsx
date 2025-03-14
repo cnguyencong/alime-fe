@@ -1,6 +1,6 @@
 import { Button, EditableText } from "@blueprintjs/core";
 import { useVideoStore } from "../../../shared/zustand/video";
-import EditTranscript from "../EditTranscript";
+import EditTranscript from "../actions/EditTranscript";
 import { FlexContainer, TextContainer } from "./CommonStyle";
 import { TranscriptTime } from "./TranscriptTime";
 import { getLangByCode } from "../../../shared/utils/common";

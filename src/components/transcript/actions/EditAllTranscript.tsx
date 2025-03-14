@@ -7,7 +7,7 @@ import {
 } from "@blueprintjs/core";
 import styled from "styled-components";
 import { useState } from "react";
-import { useStoreElements } from "../../functions/hooks/useStoreElements";
+import { useStoreElements } from "../../../functions/hooks/useStoreElements";
 import { StoreType } from "polotno/model/store";
 
 const InputGroup = styled.div`

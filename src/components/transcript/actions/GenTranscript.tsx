@@ -1,13 +1,14 @@
 import { Button } from "@blueprintjs/core";
 import { StoreType } from "polotno/model/store";
-import { dataURLtoBlob } from "../../shared/utils/blob";
-import { genTextElement } from "../../shared/utils/text";
-import { TranscriptApi } from "../../shared/services/transcript.api";
+import { dataURLtoBlob } from "../../../shared/utils/blob";
+import { genTextElement } from "../../../shared/utils/text";
+import { TranscriptApi } from "../../../shared/services/transcript.api";
 
 import { useState } from "react";
-import { TAny } from "../../shared/types/common";
+import { TAny } from "../../../shared/types/common";
 import { PageType } from "polotno/model/page-model";
 import { ElementType } from "polotno/model/group-model";
+import { TTranscriptDTO } from "../../../shared/types/transcript";
 
 const GenTranscript = ({ store }: { store: StoreType }) => {
   const storeJson = store.toJSON() as TAny;
@@ -16,7 +17,7 @@ const GenTranscript = ({ store }: { store: StoreType }) => {
   );
 
   const [isGenerating, setIsGenerating] = useState(false);
-  const [language, setLanguage] = useState("en");
+  const language = "en";
 
   const handleGenerateSubtitles = async () => {
     if (!videoEl) return;
@@ -70,7 +71,7 @@ const GenTranscript = ({ store }: { store: StoreType }) => {
     store.deleteElements(oldIds);
   };
 
-  const addTranscriptElement = (response: TAny) => {
+  const addTranscriptElement = (response: TTranscriptDTO) => {
     const canvasWidth = store.width;
     const canvasHeight = store.height;
     const fontSize = 30;

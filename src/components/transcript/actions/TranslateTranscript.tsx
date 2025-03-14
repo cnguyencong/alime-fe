@@ -2,21 +2,20 @@ import {
   Button,
   Menu,
   MenuDivider,
-  MenuItem,
   Popover,
   Position,
 } from "@blueprintjs/core";
 import { StoreType } from "polotno/model/store";
-import { genTextElement } from "../../shared/utils/text";
-import { TranscriptApi } from "../../shared/services/transcript.api";
-import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
+import { genTextElement } from "../../../shared/utils/text";
+import { TranscriptApi } from "../../../shared/services/transcript.api";
+import { useTranscriptLang } from "../../../functions/hooks/useTranscriptLang";
 
 import { useState } from "react";
-import { TAny } from "../../shared/types/common";
-import { LocaleConfig } from "../../shared/constants/locale";
+import { LocaleConfig } from "../../../shared/constants/locale";
 import { PageType } from "polotno/model/page-model";
 import { ElementType } from "polotno/model/group-model";
-import { TTranscriptItemDTO } from "../../shared/types/transcript";
+import { TTranscriptItemDTO } from "../../../shared/types/transcript";
+import LanguageItem from "../../common/LanguageItem";
 
 const TranslateTranscript = ({ store }: { store: StoreType }) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -100,15 +99,11 @@ const TranslateTranscript = ({ store }: { store: StoreType }) => {
       content={
         <Menu>
           <MenuDivider title="Select language:" />
-          {LocaleConfig.map((locale: TAny) => (
-            <MenuItem
-              key={locale.code}
-              icon={locale.code === language ? "tick" : ""}
-              text={locale.name}
-              onClick={() => setLanguage(locale.code)}
-              shouldDismissPopover={false}
-            />
-          ))}
+          <LanguageItem
+            languages={LocaleConfig.map((locale) => locale.code)}
+            selectedLang={language}
+            onClick={setLanguage}
+          />
 
           <Button
             fill

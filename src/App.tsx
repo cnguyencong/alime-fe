@@ -1,4 +1,5 @@
 import React from "react";
+import "./app.css";
 
 import { setTranslations } from "polotno/config";
 
@@ -18,7 +19,6 @@ import { Spinner } from "@blueprintjs/core";
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Workspace } from "polotno/canvas/workspace";
 import { Toolbar } from "polotno/toolbar/toolbar";
-import { ZoomButtons } from "polotno/toolbar/zoom-buttons";
 import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
 import { TimelineControl } from "./components/timeline/TimelineControl";
 import { TranscriptTab } from "./components/transcript/TranscriptTab";
@@ -34,9 +34,9 @@ type Props = Readonly<{
 
 const unusedTabs = [
   "templates",
-  "photos",
+  // "photos",
   "elements",
-  "layers",
+  // "layers",
   "background",
   "size",
 ];
@@ -50,16 +50,15 @@ const App = observer(({ store }: Props) => {
   const project = useProject();
   const height = useHeight();
 
-  React.useEffect(() => {
-    const workspaceContainer = document.querySelector(
-      ".polotno-workspace-container"
-    );
-    if (workspaceContainer) {
-      const width = workspaceContainer.clientWidth;
-      const height = workspaceContainer.clientHeight;
-      store.setSize(width, height, true);
-    }
-  }, []);
+  // React.useEffect(() => {
+  //   const workspaceContainer = document.querySelector(
+  //     ".polotno-workspace-container"
+  //   );
+  //   if (workspaceContainer) {
+  //     const width = workspaceContainer.clientWidth;
+  //     store.setSize(width, height, true);
+  //   }
+  // }, [height]);
 
   React.useEffect(() => {
     if (project.language.startsWith("fr")) {
@@ -121,15 +120,12 @@ const App = observer(({ store }: Props) => {
               }}
             />
             {/* Hide default polotno workspace */}
-            <div style={{ visibility: "hidden" }}>
-              <Workspace
-                components={{ PageControls: () => null }}
-                renderOnlyActivePage
-                store={store}
-              />
-            </div>
+            <Workspace
+              components={{ PageControls: () => null }}
+              renderOnlyActivePage
+              store={store}
+            />
             <MainWorkspace store={store} />
-            {/* <ZoomButtons store={store} /> */}
             <TimelineControl store={store} />
           </WorkspaceWrap>
         </PolotnoContainer>

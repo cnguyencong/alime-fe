@@ -1,6 +1,5 @@
-import { ContextMenu, Menu, MenuItem } from "@blueprintjs/core";
 import { observer } from "mobx-react-lite";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 // Components
 import TimelineHeader from "./TimelineHeader";
@@ -32,12 +31,13 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   const [isDraggingIndicator, setIsDraggingIndicator] = useState(false);
   const [trimming, setTrimming] = useState<TAny | null>(null);
 
+  // Handle time indicator
+  const wrapperRef = useRef<TAny>(null);
+  const [wrapperScrollLeft, setWrapperScrollLeft] = useState(0);
+  const [wrapperScrollTop, setWrapperScrollTop] = useState(0);
+
   const currentTimeInSec = useVideoStore((state) => state.currentTime);
   const setCurrentTime = useVideoStore((state) => state.setCurrentTime);
-
-  // Maximize video duration to avoid playback issues
-  const currentPage = store.activePage;
-  currentPage.set({ duration: 99999999999999 });
 
   const elements = useTimelineElements(store, 0, false).filter(
     (e) => e.custom?.type !== "transcript"
@@ -58,9 +58,12 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     const container = containerRef.current.getBoundingClientRect();
     const elementX = e.clientX - container.left;
 
+    const startAt = element?.custom?.startAt ?? 0;
+    const elementStartAtInSec = startAt / 1000;
+
     setDragging({
       element,
-      offsetX: elementX - element.custom.startAt,
+      offsetX: elementX - elementStartAtInSec,
     });
   };
 
@@ -85,22 +88,40 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
     const id = trimming?.element?.id ?? dragging?.element?.id;
     const element = store.getElementById(id) as TAny;
 
+    const customVal = element?.custom ?? {};
+
     if (dragging) {
-      e.preventDefault();
       const container = containerRef.current.getBoundingClientRect();
-      const newX = Math.max(0, e.clientX - container.left - dragging.offsetX);
+      const elementDuration =
+        element?.duration ?? customVal?.duration ?? config.defaultDuration;
+      const newX = Math.max(0, e.clientX - container.left);
+
+      const startAtInMilisecond = (newX * 1000) / config.pixelsPerSecond;
+      const endAtInMilisecond = elementDuration + startAtInMilisecond;
+
+      // Prevent dragging element out of bound
+      const endTime = Math.min(endAtInMilisecond, maxEndTime);
+      const maxStartTime = endTime - elementDuration;
+      const startTime = Math.min(startAtInMilisecond, maxStartTime);
+
       element?.set({
         custom: {
-          startAt: newX,
-          endAt: (element?.duration ?? config.defaultDuration) + newX,
+          ...customVal,
+          startAt: startTime,
+          endAt: endTime,
+          duration: elementDuration,
+          // In second unit
+          start: startTime / 1000,
+          end: endTime / 1000,
         },
       });
     } else if (trimming) {
       const containerRect = containerRef.current.getBoundingClientRect();
-      const offsetX = e.clientX - containerRect.left;
+      const offsetX = e.clientX - containerRect.left + wrapperScrollLeft;
       const newTime = Math.max(
         0,
         Math.min(trimming.originalDuration, offsetX / config.pixelsPerSecond)
@@ -109,16 +130,52 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
       function normalize(value: number, max: number): number {
         return value / max;
       }
-      const scaleTime = normalize(newTime, trimming.originalDuration / 1000);
 
-      if (trimming.side === "left") {
-        element?.set({
-          startTime: Math.max(scaleTime, 0),
-        });
+      const scaleTime = normalize(newTime, trimming.originalDuration / 1000);
+      if (trimming.type === "video") {
+        if (trimming.side === "left") {
+          element?.set({
+            startTime: Math.max(scaleTime, 0),
+          });
+        } else {
+          element?.set({
+            endTime: Math.min(scaleTime, 1),
+          });
+        }
       } else {
-        element?.set({
-          endTime: Math.min(scaleTime, 1),
-        });
+        const timeInSec = scaleTime * trimming.originalDuration;
+
+        if (trimming.side === "left") {
+          const startTime = Math.max(timeInSec, 0);
+          const endTime = trimming.originalEndTime;
+          element?.set({
+            custom: {
+              ...customVal,
+              // In milisecond unit
+              startAt: startTime,
+              duration: endTime - startTime,
+              endAt: endTime,
+              // In second unit
+              start: startTime / 1000,
+              end: endTime / 1000,
+            },
+          });
+        } else {
+          const startTime = trimming.originalStartTime;
+          const endTime = Math.min(timeInSec, maxEndTime);
+          element?.set({
+            custom: {
+              ...customVal,
+              // In milisecond unit
+              startAt: startTime,
+              duration: endTime - startTime,
+              endAt: endTime,
+              // In second unit
+              end: endTime / 1000,
+              start: startTime / 1000,
+            },
+          });
+        }
       }
     }
     handleIndicatorDragMove(e);
@@ -135,13 +192,19 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     side: "left" | "right"
   ) => {
     e.stopPropagation();
+    // We use video duration as max scale
+    const duration = maxEndTime;
+    const startTime = element?.custom?.startAt ?? 0;
+    const endTime = element?.custom?.endAt ?? config.defaultDuration;
+
     setTrimming({
       element,
       side,
       startX: e.clientX,
-      originalStartTime: element?.custom?.startAt,
-      originalEndTime: element?.custom?.endAt,
-      originalDuration: element?.custom?.duration,
+      originalStartTime: startTime,
+      originalEndTime: endTime,
+      originalDuration: duration,
+      type: element.type,
     });
   };
 
@@ -155,57 +218,49 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
   }, []);
 
-  const TimelineContextMenu = ({ children, elementId }: TAny) => {
-    return (
-      <ContextMenu
-        content={
-          <Menu>
-            <MenuItem
-              text="Delete"
-              intent="danger"
-              onClick={() => deleteElement(elementId)}
-            />
-          </Menu>
-        }
-      >
-        {children}
-      </ContextMenu>
-    );
-  };
-
-  const deleteElement = (elementId: string) => {
-    store.deleteElements([elementId]);
+  const handleScroll = (e: TAny) => {
+    const scrollY = e.target.scrollTop;
+    const scrollX = e.target.scrollLeft;
+    setWrapperScrollLeft(scrollX);
+    setWrapperScrollTop(scrollY);
   };
 
   return (
     <>
       <TimelineHeader currentTime={currentTimeInSec} maxTime={maxEndTime} />
-      <TimelineRuler duration={maxEndTime / 1000} />
+
       <TimelineContainer
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <TimelineIndicator
-          style={{ left: `${currentTimeInSec * config.pixelsPerSecond}px` }}
-        >
-          <IndicatorHandle onMouseDown={handleIndicatorDragStart} />
-        </TimelineIndicator>
-        <TimelineRowWrapper>
-          {elements.map((element, _index) => (
-            <TimelineContextMenu elementId={element.id} key={element.id}>
-              <TimelineItem
-                element={{
-                  id: element.id,
-                  type: element.type,
-                  custom: element.custom,
-                  text: element?.text,
-                }}
-                handleDragStart={handleDragStart}
-                handleTrimStart={handleTrimStart}
-              />
-            </TimelineContextMenu>
+        <TimelineRowWrapper ref={wrapperRef} onScroll={handleScroll}>
+          {elements.length > 0 && (
+            <TimelineRuler duration={maxEndTime / 1000} />
+          )}
+
+          <TimelineIndicator
+            style={{
+              left: `${currentTimeInSec * config.pixelsPerSecond}px`,
+              top: `${wrapperScrollTop}px`,
+            }}
+          >
+            <IndicatorHandle onMouseDown={handleIndicatorDragStart} />
+          </TimelineIndicator>
+
+          {elements.map((element) => (
+            <TimelineItem
+              element={{
+                id: element.id,
+                type: element.type,
+                custom: element.custom,
+                text: element?.text,
+                src: element?.src,
+              }}
+              handleDragStart={handleDragStart}
+              handleTrimStart={handleTrimStart}
+            />
           ))}
         </TimelineRowWrapper>
       </TimelineContainer>

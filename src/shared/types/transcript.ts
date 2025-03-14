@@ -2,12 +2,16 @@ import { TextElementType } from "polotno/model/text-model";
 
 export interface TTranscriptElement extends Partial<TextElementType> {
   custom: {
+    // In milisecond unit
     startAt: number;
     duration: number;
     endAt: number;
-    type: "transcript";
+    // In second unit
     start: number;
     end: number;
+
+    // Other
+    type: "transcript";
     id: number;
     lang: string;
     isOriginal?: boolean;

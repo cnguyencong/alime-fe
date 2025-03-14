@@ -5,10 +5,10 @@ import {
   RulerTick,
 } from "./styles/TimelineRulerStyle";
 import { config } from "../../shared/constants";
+import { formatTime } from "../../shared/utils/common";
 
 interface TimelineRulerProps {
   duration: number; // in seconds
-  pixelsPerSecond?: number;
 }
 
 const TimelineRuler: React.FC<TimelineRulerProps> = ({ duration }) => {
@@ -40,7 +40,7 @@ const TimelineRuler: React.FC<TimelineRulerProps> = ({ duration }) => {
           />
           {tick.tickSize === "large" && (
             <RulerLabel style={{ left: `${tick.position}px` }}>
-              {tick.time}s
+              {formatTime(tick.time)}
             </RulerLabel>
           )}
         </React.Fragment>

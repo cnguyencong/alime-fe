@@ -1,11 +1,12 @@
 import styled, { css } from "styled-components";
 
 export const TimelineRulerContainer = styled.div`
-  position: relative;
-  width: 100%;
+  position: sticky;
   height: 40px;
-  border-top: 2px solid #333;
-  background: #1c6e42;
+  top: 0;
+  left: 0;
+  background: white;
+  z-index: 1;
 `;
 
 interface TickProps {
@@ -16,7 +17,7 @@ export const RulerTick = styled.div<TickProps>`
   position: absolute;
   bottom: 0;
   width: 1px;
-  background-color: white;
+  background-color: #333;
 
   ${(props) =>
     props.tickSize === "small" &&
@@ -39,5 +40,5 @@ export const RulerLabel = styled.div`
   position: absolute;
   bottom: 20px;
   font-size: 12px;
-  color: white;
+  color: #333;
 `;

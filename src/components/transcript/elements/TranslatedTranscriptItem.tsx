@@ -3,7 +3,7 @@ import { Button, EditableText, HTMLSelect, Tooltip } from "@blueprintjs/core";
 import { FlexContainer, TextContainer } from "./CommonStyle";
 import { getLangByCode } from "../../../shared/utils/common";
 import { TranscriptTime } from "./TranscriptTime";
-import EditTranscript from "../EditTranscript";
+import EditTranscript from "../actions/EditTranscript";
 import { TTranscriptElement } from "../../../shared/types/transcript";
 
 interface TranslatedTranscriptItemProps {

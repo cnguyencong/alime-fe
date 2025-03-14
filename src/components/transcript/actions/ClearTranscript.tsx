@@ -2,7 +2,6 @@ import {
   Button,
   Menu,
   MenuDivider,
-  MenuItem,
   Popover,
   Position,
 } from "@blueprintjs/core";
@@ -11,8 +10,8 @@ import { useState } from "react";
 import { StoreType } from "polotno/model/store";
 import { ElementType } from "polotno/model/group-model";
 import { PageType } from "polotno/model/page-model";
-import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
-import { getLangByCode } from "../../shared/utils/common";
+import { useTranscriptLang } from "../../../functions/hooks/useTranscriptLang";
+import LanguageItem from "../../common/LanguageItem";
 
 export const ClearTranscript = ({ store }: { store: StoreType }) => {
   const [language, setLanguage] = useState("en");
@@ -39,15 +38,11 @@ export const ClearTranscript = ({ store }: { store: StoreType }) => {
       content={
         <Menu>
           <MenuDivider title="Select language:" />
-          {selectedTranscripts.map((code: string) => (
-            <MenuItem
-              key={code}
-              icon={code === language ? "tick" : ""}
-              text={getLangByCode(code)?.name ?? ""}
-              onClick={() => setLanguage(code)}
-              shouldDismissPopover={false}
-            />
-          ))}
+          <LanguageItem
+            languages={selectedTranscripts}
+            selectedLang={language}
+            onClick={setLanguage}
+          />
 
           <Button
             fill
