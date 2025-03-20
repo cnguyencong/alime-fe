@@ -1,26 +1,31 @@
 import React from "react";
+import "./app.css";
 
 import { setTranslations } from "polotno/config";
-import Topbar from "./components/topbar/top-bar";
 
-import fr from "./translations/fr.json";
-import en from "./translations/en.json";
-import id from "./translations/id.json";
-import ru from "./translations/ru.json";
-import ptBr from "./translations/pt-br.json";
-import zhCh from "./translations/zh-ch.json";
-import { useProject } from "./utils/project";
+import fr from "./shared/translations/fr.json";
+import en from "./shared/translations/en.json";
+import id from "./shared/translations/id.json";
+import ru from "./shared/translations/ru.json";
+import ptBr from "./shared/translations/pt-br.json";
+import zhCh from "./shared/translations/zh-ch.json";
+
+import { useProject } from "./shared/utils/project";
 import { observer } from "mobx-react-lite";
 import { StoreType } from "polotno/model/store";
-import { useHeight } from "./hooks/use-height";
-import { loadFile } from "./utils/file";
-import { Spinner } from "@blueprintjs/core";
+import { useHeight } from "./functions/hooks/use-height";
+import { loadFile } from "./shared/utils/file";
+
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Workspace } from "polotno/canvas/workspace";
 import { Toolbar } from "polotno/toolbar/toolbar";
-import { ZoomButtons } from "polotno/toolbar/zoom-buttons";
-import { PagesTimeline } from "polotno/pages-timeline";
 import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
+import { TimelineControl } from "./components/timeline/TimelineControl";
+import { TranscriptTab } from "./components/transcript/TranscriptTab";
+import { MainWorkspace } from "./components/workspace/MainWorkspace";
+import LoadingOverlay from "./components/common/LoadingOverlay";
+import { VideosSection } from "./components/sections/video-section";
+import { ToolbarControls } from "./toolbar-controls";
 
 // load default translations
 setTranslations(en);
@@ -29,9 +34,25 @@ type Props = Readonly<{
   store: StoreType;
 }>;
 
+const unusedTabs = [
+  "templates",
+  // "photos",
+  "elements",
+  "layers",
+  "background",
+  "size",
+];
+
+const sections = [...DEFAULT_SECTIONS, TranscriptTab, VideosSection].filter(
+  (section) => !unusedTabs.includes(section.name)
+);
+
 const App = observer(({ store }: Props) => {
+  console.log(store.toJSON());
   const project = useProject();
   const height = useHeight();
+
+  console.log(sections);
 
   React.useEffect(() => {
     if (project.language.startsWith("fr")) {
@@ -79,45 +100,30 @@ const App = observer(({ store }: Props) => {
       }}
       onDrop={handleDrop}
     >
-      <Topbar store={store} />
-      <div style={{ height: "calc(100% - 50px)" }}>
+      <div style={{ height: "100%" }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
-            <SidePanel store={store} sections={DEFAULT_SECTIONS} />
+            <SidePanel
+              store={store}
+              sections={sections}
+              defaultSection="upload"
+            />
           </SidePanelWrap>
           <WorkspaceWrap>
-            <Toolbar store={store} />
-            <Workspace store={store} />
-            <ZoomButtons store={store} />
-            <PagesTimeline store={store} />
+            <Toolbar store={store} components={ToolbarControls} />
+            {/* This default polotno workspace is hidden */}
+            <Workspace
+              components={{ PageControls: () => null }}
+              renderOnlyActivePage
+              store={store}
+            />
+            {/* Main workspace of this app */}
+            <MainWorkspace store={store} />
+            <TimelineControl store={store} />
           </WorkspaceWrap>
         </PolotnoContainer>
       </div>
-      {project.status === "loading" && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              color: "white",
-            }}
-          >
-            <Spinner />
-          </div>
-        </div>
-      )}
+      {project.status === "loading" && <LoadingOverlay />}
     </div>
   );
 });

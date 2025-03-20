@@ -2,7 +2,7 @@ import React from "react";
 import { observer } from "mobx-react-lite";
 
 import { Button, Position, Menu, MenuItem, Popover } from "@blueprintjs/core";
-import { useProject } from "../../utils/project";
+import { useProject } from "../../shared/utils/project";
 
 export const UserMenu = observer(() => {
   const project = useProject();

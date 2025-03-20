@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as svg from "polotno/utils/svg";
 import { Button, InputGroup } from "@blueprintjs/core";
 import { FaQrcode } from "react-icons/fa";
-import { TAny } from "../../types/common";
+import { TAny } from "../../shared/types/common";
 import { StoreType } from "polotno/model/store";
 
 type Props = Readonly<{

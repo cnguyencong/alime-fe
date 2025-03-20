@@ -1,0 +1,89 @@
+import { calcPixelsPerSecond } from "../../shared/utils/common";
+import { StoreType } from "polotno/model/store";
+import { ElementType } from "polotno/model/group-model";
+import { PageType } from "polotno/model/page-model";
+import { config } from "../../shared/constants";
+import { useLangStore } from "../../shared/zustand/language";
+
+export const useTimelineElements = (
+  store: StoreType,
+  currentTime: number, // In milisecond
+  isPlaying: boolean
+) => {
+  const currentLang = useLangStore((state) => state.selectedLang);
+  const elements: ElementType[] = [];
+  const videoElIds: string[] = [];
+
+  store.pages.forEach((page: PageType) => {
+    page.children.forEach((element: ElementType) => {
+      const elementDuration =
+        element.custom?.duration ?? element?.duration ?? config.defaultDuration;
+      const elementStartTime = element.startTime ?? 0;
+
+      const elementStartAt = element.custom?.startAt ?? 0;
+
+      const durationInPixels =
+        calcPixelsPerSecond(elementDuration, config.pixelsPerSecond) ?? 50;
+      const elementEndAt = element.custom?.endAt ?? elementDuration;
+      let elementWidth = durationInPixels;
+
+      if (element.type === "video") {
+        const scaleTime = element.endTime - element.startTime;
+        elementWidth = durationInPixels * scaleTime;
+      }
+
+      let isInRange =
+        currentTime >= elementStartAt && currentTime <= elementEndAt;
+      const shouldPlay = isInRange && isPlaying;
+
+      if (
+        element.custom?.type === "transcript" &&
+        element.custom?.lang !== currentLang
+      ) {
+        isInRange = false;
+      }
+
+      const durationInSec = elementDuration / 1000;
+      const elementStartAtInSec = elementStartAt / 1000;
+      const offsetLeft =
+        (elementStartAtInSec + elementStartTime * durationInSec) *
+        config.pixelsPerSecond;
+
+      const customValue = {
+        ...element?.custom,
+        startAt: elementStartAt,
+        endAt: elementEndAt,
+        width: elementWidth,
+        duration: elementDuration,
+        offsetLeft: offsetLeft,
+      };
+
+      const timelineElement = {
+        ...element,
+        id: element.id,
+        name: element.name || element.id,
+        pageId: page.id,
+        startTime: elementStartTime,
+        duration: elementDuration,
+        isPlaying: shouldPlay,
+        src: element?.src,
+        custom: customValue,
+        visible: isInRange,
+      };
+
+      elements.push(timelineElement);
+
+      if (element.type === "video") {
+        videoElIds.push(element.id);
+        // Only allow one video element to be played at a time
+        if (videoElIds.length > 1) {
+          requestAnimationFrame(() => {
+            store.deleteElements([element.id]);
+          });
+        }
+      }
+    });
+  });
+
+  return elements;
+};

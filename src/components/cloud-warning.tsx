@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { Button } from "@blueprintjs/core";
-import { useProject } from "../utils/project";
+import { useProject } from "../shared/utils/project";
 import { Cloud } from "@blueprintjs/icons";
 
 export const CloudWarning = observer(() => {

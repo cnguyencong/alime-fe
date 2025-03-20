@@ -1,65 +1,29 @@
-import React from "react";
-import { observer } from "mobx-react-lite";
 import {
   Button,
-  Position,
-  Menu,
+  Checkbox,
   HTMLSelect,
-  Slider,
+  Menu,
   Popover,
+  Position,
   ProgressBar,
+  Slider,
 } from "@blueprintjs/core";
 import JSZip from "jszip";
-import { downloadFile } from "polotno/utils/download";
-import * as unit from "polotno/utils/unit";
-import { t } from "polotno/utils/l10n";
+import { observer } from "mobx-react-lite";
+import { ElementType } from "polotno/model/group-model";
+import { PageType } from "polotno/model/page-model";
 import { StoreType } from "polotno/model/store";
-
-type SaveAsVideoParams = {
-  store: StoreType;
-  pixelRatio?: number;
-  fps?: number;
-  onProgress: (progress: number, status: string) => void;
-};
-
-const saveAsVideo = async ({
-  store,
-  pixelRatio,
-  fps: _fps,
-  onProgress,
-}: SaveAsVideoParams) => {
-  const json = store.toJSON();
-  const req = await fetch(
-    "https://api.polotno.dev/api/renders?KEY=nFA5H9elEytDyPyvKL7T",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        design: json,
-        pixelRatio,
-        format: "mp4",
-      }),
-    }
-  );
-  const job = await req.json();
-  while (true) {
-    const jobReq = await fetch(
-      `https://api.polotno.dev/api/renders/${job.id}?KEY=nFA5H9elEytDyPyvKL7T`
-    );
-    const jobData = await jobReq.json();
-    if (jobData.status === "done") {
-      downloadFile(jobData.output, "polotno.mp4");
-      break;
-    } else if (jobData.status === "error") {
-      throw new Error("Failed to render video");
-    } else {
-      onProgress(jobData.progress, jobData.status);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-  }
-};
+import { downloadFile } from "polotno/utils/download";
+import { t } from "polotno/utils/l10n";
+import * as unit from "polotno/utils/unit";
+import React, { useState } from "react";
+import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
+import { config } from "../../shared/constants";
+import { TranscriptApi } from "../../shared/services/transcript.api";
+import { TAny } from "../../shared/types/common";
+import { getLangByCode } from "../../shared/utils/common";
+import { useTransitions } from "../../shared/zustand/transition";
+import { ANIMATION_DURATION } from "../workspace/elements/AnimatedWrapper";
 
 type Props = Readonly<{
   store: StoreType;
@@ -72,11 +36,16 @@ export const DownloadButton = observer(({ store }: Props) => {
   const [quality, setQuality] = React.useState(1);
   const [pageSizeModifier, setPageSizeModifier] = React.useState(1);
   const [fps, setFPS] = React.useState(10);
-  const [type, setType] = React.useState("png");
+  const [type, setType] = React.useState("mp4");
   const [progress, setProgress] = React.useState(0);
   const [progressStatus, setProgressStatus] = React.useState("scheduled");
+  const selectedTranscripts = useTranscriptLang(store);
+  const [language, setLanguage] = useState("en");
+  const [exportSubtitle, setExportSubtitle] = useState(false);
+  const [exportVoice, setExportVoice] = useState(false);
 
-  console.log(progressStatus);
+  // Only allow adding 1 transition for now
+  const { segmentTransitions } = useTransitions();
 
   const getName = () => {
     const texts: string[] = [];
@@ -90,6 +59,104 @@ export const DownloadButton = observer(({ store }: Props) => {
     const allWords = texts.join(" ").split(" ");
     const words = allWords.slice(0, 6);
     return words.join(" ").replace(/\s/g, "-").toLowerCase() || "polotno";
+  };
+
+  const calculateTrimTime = (
+    scaledStart: number,
+    scaledEnd: number,
+    durationMs: number
+  ) => {
+    let startTimeMs = Math.round(scaledStart * durationMs);
+    let endTimeMs = Math.round(scaledEnd * durationMs);
+
+    let startTimeSec = startTimeMs / 1000;
+    let endTimeSec = endTimeMs / 1000;
+
+    return {
+      startTimeMs,
+      endTimeMs,
+      startTimeSec,
+      endTimeSec,
+    };
+  };
+
+  const getTransitionFields = ():
+    | {
+        isUsingFrameTransition: boolean;
+        transitionStart: number;
+        transitionEnd: number;
+      }
+    | {} => {
+    if (segmentTransitions.length === 0) return {};
+    // ms to second
+    const transitionStart = (segmentTransitions[0].time ?? 0) / 1000;
+    const transitionEnd =
+      ((segmentTransitions[0].time ?? 0) + ANIMATION_DURATION) / 1000;
+
+    return {
+      isUsingFrameTransition: true,
+      transitionStart,
+      transitionEnd,
+    };
+  };
+
+  const downloadVideo = async () => {
+    if (!store.custom?.processId) return;
+
+    setProgressStatus("scheduled");
+    const segments: TAny[] = [];
+
+    let isTrimVideo = false;
+    let trimStart = 0;
+    let trimEnd = 0;
+
+    store.pages.forEach((page: PageType) => {
+      page.children.forEach((element: ElementType & { text: string }) => {
+        if (
+          element.custom?.type === "transcript" &&
+          element.custom?.lang === language
+        ) {
+          segments.push({
+            id: element.custom?.id,
+            start: element.custom?.start,
+            end: element.custom?.end,
+            text: element.text,
+          });
+        } else if (element.type === "video") {
+          isTrimVideo = !(element.startTime === 0 && element.endTime === 1);
+          const calcTrimResult = calculateTrimTime(
+            element.startTime,
+            element.endTime,
+            element.duration
+          );
+          trimStart = calcTrimResult.startTimeSec;
+          trimEnd = calcTrimResult.endTimeSec;
+        }
+      });
+    });
+
+    const transitionFields = getTransitionFields();
+
+    const body = {
+      processId: store.custom?.processId,
+      segments,
+      language: language,
+      isShowCaption: exportSubtitle,
+      isAppendTTS: exportVoice,
+      isTrimVideo,
+      trimStart,
+      trimEnd,
+      ...transitionFields,
+    };
+
+    const response = await TranscriptApi.exportVideo(body);
+
+    if (response?.file_path) {
+      await TranscriptApi.downloadVideo(response.file_path);
+    }
+
+    setProgressStatus("done");
+    setProgress(0);
   };
 
   const maxQuality = type === "mp4" ? 1 : 300 / 72;
@@ -115,96 +182,99 @@ export const DownloadButton = observer(({ store }: Props) => {
             <option value="svg">SVG</option>
             <option value="json">JSON</option>
             <option value="gif">GIF</option>
-            <option value="mp4">MP4 Video (Beta)</option>
+            <option value="mp4">MP4 Video</option>
           </HTMLSelect>
 
-          {type !== "json" && type !== "html" && type !== "svg" && (
-            <>
-              <li className="bp5-menu-header">
-                <h6 className="bp5-heading">Quality</h6>
-              </li>
-              <div style={{ padding: "10px" }}>
-                <Slider
-                  value={quality}
-                  labelRenderer={false}
-                  onChange={(quality) => {
-                    setQuality(quality);
-                  }}
-                  stepSize={0.2}
-                  min={0.2}
-                  max={maxQuality}
-                  showTrackFill={false}
-                />
+          {type !== "json" &&
+            type !== "html" &&
+            type !== "svg" &&
+            type !== "mp4" && (
+              <>
+                <li className="bp5-menu-header">
+                  <h6 className="bp5-heading">Quality</h6>
+                </li>
+                <div style={{ padding: "10px" }}>
+                  <Slider
+                    value={quality}
+                    labelRenderer={false}
+                    onChange={(quality) => {
+                      setQuality(quality);
+                    }}
+                    stepSize={0.2}
+                    min={0.2}
+                    max={maxQuality}
+                    showTrackFill={false}
+                  />
+                  {type === "pdf" && (
+                    <div>DPI: {Math.round(store.dpi * quality)}</div>
+                  )}
+                  {type !== "pdf" && (
+                    <div>
+                      {Math.round(store.width * quality)} x{" "}
+                      {Math.round(store.height * quality)} px
+                    </div>
+                  )}
+                  {type === "gif" && (
+                    <>
+                      <li className="bp5-menu-header">
+                        <h6 className="bp5-heading">FPS</h6>
+                      </li>
+                      <div style={{ padding: "10px" }}>
+                        <Slider
+                          value={fps}
+                          // labelRenderer={false}
+                          labelStepSize={5}
+                          onChange={(fps) => {
+                            setFPS(fps);
+                          }}
+                          stepSize={1}
+                          min={5}
+                          max={30}
+                          showTrackFill={false}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
                 {type === "pdf" && (
-                  <div>DPI: {Math.round(store.dpi * quality)}</div>
-                )}
-                {type !== "pdf" && (
-                  <div>
-                    {Math.round(store.width * quality)} x{" "}
-                    {Math.round(store.height * quality)} px
-                  </div>
-                )}
-                {type === "gif" && (
                   <>
                     <li className="bp5-menu-header">
-                      <h6 className="bp5-heading">FPS</h6>
+                      <h6 className="bp5-heading">Page Size</h6>
                     </li>
                     <div style={{ padding: "10px" }}>
                       <Slider
-                        value={fps}
-                        // labelRenderer={false}
-                        labelStepSize={5}
-                        onChange={(fps) => {
-                          setFPS(fps);
+                        value={pageSizeModifier}
+                        labelRenderer={false}
+                        onChange={(pageSizeModifier) => {
+                          setPageSizeModifier(pageSizeModifier);
                         }}
-                        stepSize={1}
-                        min={5}
-                        max={30}
+                        stepSize={0.2}
+                        min={0.2}
+                        max={3}
                         showTrackFill={false}
                       />
+
+                      <div>
+                        {unit.pxToUnitRounded({
+                          px: store.width * pageSizeModifier,
+                          dpi: store.dpi,
+                          precious: 0,
+                          unit: "mm",
+                        })}{" "}
+                        x{" "}
+                        {unit.pxToUnitRounded({
+                          px: store.height * pageSizeModifier,
+                          dpi: store.dpi,
+                          precious: 0,
+                          unit: "mm",
+                        })}{" "}
+                        mm
+                      </div>
                     </div>
                   </>
                 )}
-              </div>
-              {type === "pdf" && (
-                <>
-                  <li className="bp5-menu-header">
-                    <h6 className="bp5-heading">Page Size</h6>
-                  </li>
-                  <div style={{ padding: "10px" }}>
-                    <Slider
-                      value={pageSizeModifier}
-                      labelRenderer={false}
-                      onChange={(pageSizeModifier) => {
-                        setPageSizeModifier(pageSizeModifier);
-                      }}
-                      stepSize={0.2}
-                      min={0.2}
-                      max={3}
-                      showTrackFill={false}
-                    />
-
-                    <div>
-                      {unit.pxToUnitRounded({
-                        px: store.width * pageSizeModifier,
-                        dpi: store.dpi,
-                        precious: 0,
-                        unit: "mm",
-                      })}{" "}
-                      x{" "}
-                      {unit.pxToUnitRounded({
-                        px: store.height * pageSizeModifier,
-                        dpi: store.dpi,
-                        precious: 0,
-                        unit: "mm",
-                      })}{" "}
-                      mm
-                    </div>
-                  </div>
-                </>
-              )}
-            </>
-          )}
+              </>
+            )}
           {type === "json" && (
             <>
               <div style={{ padding: "10px", maxWidth: "180px", opacity: 0.8 }}>
@@ -216,12 +286,39 @@ export const DownloadButton = observer(({ store }: Props) => {
           )}
           {type === "mp4" && (
             <>
-              <div style={{ padding: "10px", maxWidth: "180px", opacity: 0.8 }}>
-                <strong>Beta feature.</strong>{" "}
-                <a href="mailto:anton@polotno.com">
-                  Let us know what you think!
-                </a>
-              </div>
+              {selectedTranscripts.length > 0 && (
+                <>
+                  <p></p>
+                  <Checkbox
+                    checked={exportSubtitle}
+                    label="Subtitles"
+                    onChange={(e) => setExportSubtitle(e.target.checked)}
+                  />
+                  <p></p>
+                  <Checkbox
+                    checked={exportVoice}
+                    onChange={(e) => setExportVoice(e.target.checked)}
+                    label="Voice"
+                  />
+                  {(exportSubtitle || exportVoice) && (
+                    <HTMLSelect
+                      fill
+                      onChange={(e) => {
+                        setLanguage(e.target.value);
+                      }}
+                      value={language}
+                    >
+                      {selectedTranscripts.map((code: string) => (
+                        <option key={code} value={code}>
+                          {getLangByCode(code)?.name ?? ""}
+                        </option>
+                      ))}
+                    </HTMLSelect>
+                  )}
+                </>
+              )}
+
+              <p></p>
               {saving && (
                 <div
                   style={{ padding: "10px", maxWidth: "180px", opacity: 0.8 }}
@@ -269,17 +366,7 @@ export const DownloadButton = observer(({ store }: Props) => {
                     fps,
                   });
                 } else if (type === "mp4") {
-                  setProgressStatus("scheduled");
-                  await saveAsVideo({
-                    store,
-                    pixelRatio: quality,
-                    onProgress: (progress, status) => {
-                      setProgress(progress);
-                      setProgressStatus(status);
-                    },
-                  });
-                  setProgressStatus("done");
-                  setProgress(0);
+                  await downloadVideo();
                 } else {
                   if (store.pages.length < 3) {
                     store.pages.forEach((page, index) => {
@@ -315,7 +402,6 @@ export const DownloadButton = observer(({ store }: Props) => {
 
                     const content = await zip.generateAsync({ type: "base64" });
                     const result = "data:application/zip;base64," + content;
-                    console.log(content);
                     downloadFile(result, getName() + ".zip");
                   }
                 }
@@ -331,33 +417,6 @@ export const DownloadButton = observer(({ store }: Props) => {
           >
             Download {type.toUpperCase()}
           </Button>
-
-          {/* <MenuItem
-            icon="media"
-            text={t('toolbar.saveAsImage')}
-            onClick={async () => {
-              store.pages.forEach((page, index) => {
-                // do not add index if we have just one page
-                const indexString =
-                  store.pages.length > 1 ? '-' + (index + 1) : '';
-                store.saveAsImage({
-                  pageId: page.id,
-                  fileName: getName() + indexString + '.png',
-                });
-              });
-            }}
-          />
-          <MenuItem
-            icon="document"
-            text={t('toolbar.saveAsPDF')}
-            onClick={async () => {
-              setSaving(true);
-              await store.saveAsPDF({
-                fileName: getName() + '.pdf',
-              });
-              setSaving(false);
-            }}
-          /> */}
         </Menu>
       }
       position={Position.BOTTOM_RIGHT}

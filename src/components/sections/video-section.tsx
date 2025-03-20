@@ -7,8 +7,8 @@ import { Video } from "@blueprintjs/icons";
 import { selectVideo } from "polotno/side-panel/select-video";
 import { StoreType } from "polotno/model/store";
 import { VideoElementType } from "polotno/model/video-model";
-import { PolotnoPexelsVideoSearchResponse } from "../../types/polotno";
-import { TAny } from "../../types/common";
+import { PolotnoPexelsVideoSearchResponse } from "../../shared/types/polotno";
+import { TAny } from "../../shared/types/common";
 
 // this is a demo key just for that project
 // (!) please don't use it in your projects
@@ -104,14 +104,10 @@ export const VideosPanel = ({ store }: Props) => {
   );
 };
 
-// define the new custom section
+// Currently we dont need this video section
 export const VideosSection = {
   name: "videos",
-  Tab: (props: React.ComponentProps<TAny>) => (
-    <SectionTab name="Videos" {...props}>
-      <Video />
-    </SectionTab>
-  ),
+  Tab: () => null,
   // we need observer to update component automatically on any store changes
-  Panel: VideosPanel,
+  Panel: () => null,
 };

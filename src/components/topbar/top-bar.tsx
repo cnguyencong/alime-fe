@@ -13,13 +13,11 @@ import { FaTwitter } from "react-icons/fa";
 import { BiCodeBlock } from "react-icons/bi";
 import styled from "polotno/utils/styled";
 
-import { useProject } from "../../utils/project";
-
 import { FileMenu } from "./file-menu";
 import { DownloadButton } from "./download-button";
 import { UserMenu } from "./user-menu";
 import { CloudWarning } from "../cloud-warning";
-import { Project } from "../../utils/project";
+import { Project, useProject } from "../../shared/utils/project";
 import MdcCloudAlert from "../../assets/icons/mdc-cloud-alert";
 import MdcCloudCheck from "../../assets/icons/mdc-cloud.check";
 import MdcCloudSync from "../../assets/icons/mdc-cloud-sync";

@@ -3,7 +3,7 @@ import "./themes/index.css";
 import App from "./App.tsx";
 import { unstable_setAnimationsEnabled } from "polotno/config";
 import createStore, { StoreType } from "polotno/model/store";
-import createProject, { Project, ProjectContext } from "./utils/project.ts";
+import createProject, { Project, ProjectContext } from "./shared/utils/project.ts";
 import { ErrorBoundary } from "react-error-boundary";
 
 if (window.location.host !== "studio.polotno.com") {
