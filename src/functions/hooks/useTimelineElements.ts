@@ -4,6 +4,7 @@ import { ElementType } from "polotno/model/group-model";
 import { PageType } from "polotno/model/page-model";
 import { config } from "../../shared/constants";
 import { useLangStore } from "../../shared/zustand/language";
+import { TAny } from "../../shared/types/common";
 
 export const useTimelineElements = (
   store: StoreType,
@@ -15,7 +16,7 @@ export const useTimelineElements = (
   const videoElIds: string[] = [];
 
   store.pages.forEach((page: PageType) => {
-    page.children.forEach((element: ElementType) => {
+    page.children.forEach((element: TAny) => {
       const elementDuration =
         element.custom?.duration ?? element?.duration ?? config.defaultDuration;
       const elementStartTime = element.startTime ?? 0;

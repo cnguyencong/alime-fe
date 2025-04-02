@@ -3,7 +3,7 @@ import { createContext, useContext } from "react";
 import { storage } from "./storage";
 
 import * as api from "./api";
-import { TAny } from "../../types/common";
+import { TAny } from "../types/common";
 
 export const ProjectContext = createContext<Project>({} as TAny);
 

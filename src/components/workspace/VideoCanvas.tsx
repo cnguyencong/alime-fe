@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTransitions } from "../../shared/zustand/transition";
 import { useVideoStore } from "../../shared/zustand/video";
 import { AnimatedWrapper } from "./elements/AnimatedWrapper";
+import { TAny } from "../../shared/types/common";
 
 interface VideoCanvasProps {
   src: string;
@@ -20,8 +21,8 @@ const VideoCanvas: React.FC<VideoCanvasProps> = ({
   trimStartTime,
   trimEndTime,
 }) => {
-  const videoRef = useRef<any>(null);
-  const canvasRef = useRef<any>(null);
+  const videoRef = useRef<TAny>(null);
+  const canvasRef = useRef<TAny>(null);
   const isPlaying = useVideoStore((state) => state.isPlaying);
   const isPlayingRange = useVideoStore((state) => state.isPlayingRange);
   const setCurrentTime = useVideoStore((state) => state.setCurrentTime);

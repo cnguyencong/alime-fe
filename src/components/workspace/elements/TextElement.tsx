@@ -1,6 +1,7 @@
 import { TextElementType } from "polotno/model/text-model";
 import { Transformer, Text } from "react-konva";
 import React from "react";
+import { TAny } from "../../../shared/types/common";
 
 interface TextElementProps {
   textEl: TextElementType;
@@ -15,8 +16,8 @@ export const TextElement: React.FC<TextElementProps> = ({
   onSelect,
   onChange,
 }) => {
-  const textRef = React.useRef<any>();
-  const trRef = React.useRef<any>();
+  const textRef = React.useRef<TAny>();
+  const trRef = React.useRef<TAny>();
 
   React.useEffect(() => {
     if (isSelected) {
@@ -26,7 +27,7 @@ export const TextElement: React.FC<TextElementProps> = ({
     }
   }, [isSelected]);
 
-  const handleDblClick = (_: Event) => {
+  const handleDblClick = () => {
     const textNode = textRef.current;
     const stage = textNode.getStage();
     const stageBox = stage.container().getBoundingClientRect();
@@ -77,7 +78,7 @@ export const TextElement: React.FC<TextElementProps> = ({
       removeTextarea();
     };
 
-    const handleOutsideClick = (e: any) => {
+    const handleOutsideClick = (e: TAny) => {
       if (e.target !== textarea) {
         setTextAndRemove();
       }

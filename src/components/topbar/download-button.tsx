@@ -18,7 +18,6 @@ import { t } from "polotno/utils/l10n";
 import * as unit from "polotno/utils/unit";
 import React, { useState } from "react";
 import { useTranscriptLang } from "../../functions/hooks/useTranscriptLang";
-import { config } from "../../shared/constants";
 import { TranscriptApi } from "../../shared/services/transcript.api";
 import { TAny } from "../../shared/types/common";
 import { getLangByCode } from "../../shared/utils/common";
@@ -38,7 +37,6 @@ export const DownloadButton = observer(({ store }: Props) => {
   const [fps, setFPS] = React.useState(10);
   const [type, setType] = React.useState("mp4");
   const [progress, setProgress] = React.useState(0);
-  const [progressStatus, setProgressStatus] = React.useState("scheduled");
   const selectedTranscripts = useTranscriptLang(store);
   const [language, setLanguage] = useState("en");
   const [exportSubtitle, setExportSubtitle] = useState(false);
@@ -103,7 +101,6 @@ export const DownloadButton = observer(({ store }: Props) => {
   const downloadVideo = async () => {
     if (!store.custom?.processId) return;
 
-    setProgressStatus("scheduled");
     const segments: TAny[] = [];
 
     let isTrimVideo = false;
@@ -155,7 +152,6 @@ export const DownloadButton = observer(({ store }: Props) => {
       await TranscriptApi.downloadVideo(response.file_path);
     }
 
-    setProgressStatus("done");
     setProgress(0);
   };
 

@@ -249,7 +249,7 @@ export const TimelineControl = observer(({ store }: TimelineControlProps) => {
           >
             <IndicatorHandle onMouseDown={handleIndicatorDragStart} />
           </TimelineIndicator>
-          {elements.map((element) => (
+          {elements.map((element: TAny) => (
             <TimelineItem
               key={element.id}
               element={{

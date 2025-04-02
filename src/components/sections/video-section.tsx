@@ -1,14 +1,11 @@
 import { InputGroup } from "@blueprintjs/core";
 import { ImagesGrid } from "polotno/side-panel/images-grid";
-import { SectionTab } from "polotno/side-panel";
 import { useInfiniteAPI } from "polotno/utils/use-api";
 import { t } from "polotno/utils/l10n";
-import { Video } from "@blueprintjs/icons";
 import { selectVideo } from "polotno/side-panel/select-video";
 import { StoreType } from "polotno/model/store";
 import { VideoElementType } from "polotno/model/video-model";
 import { PolotnoPexelsVideoSearchResponse } from "../../shared/types/polotno";
-import { TAny } from "../../shared/types/common";
 
 // this is a demo key just for that project
 // (!) please don't use it in your projects

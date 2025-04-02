@@ -1,6 +1,7 @@
 import { ImageElementType } from "polotno/model/image-model";
 import { useRef, useEffect, useState } from "react";
 import { Image, Transformer } from "react-konva";
+import { TAny } from "../../../shared/types/common";
 
 interface ImageElementProps {
   imageEl: ImageElementType;
@@ -16,8 +17,8 @@ const ImageElement: React.FC<ImageElementProps> = ({
   onChange,
 }) => {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const imageRef = useRef<any>(null);
-  const transformerRef = useRef<any>(null);
+  const imageRef = useRef<TAny>(null);
+  const transformerRef = useRef<TAny>(null);
 
   useEffect(() => {
     const img = new window.Image();

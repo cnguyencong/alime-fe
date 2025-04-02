@@ -19,7 +19,7 @@ const InputGroup = styled.div`
 `;
 
 const EditAllTranscript = ({ store }: { store: StoreType }) => {
-  const [fontSize, setFontsize] = useState<number>(30);
+  const [fontSize, setFontSize] = useState<number>(30);
   const [color, setColor] = useState<string>("white");
   const [isLoadingAll, setIsLoadingAll] = useState<boolean>(false);
 
@@ -51,7 +51,7 @@ const EditAllTranscript = ({ store }: { store: StoreType }) => {
               type="number"
               dir="auto"
               id="end"
-              onChange={(e) => setFontsize(+e.target.value)}
+              onChange={(e) => setFontSize(+e.target.value)}
             />
           </InputGroup>
           <InputGroup>

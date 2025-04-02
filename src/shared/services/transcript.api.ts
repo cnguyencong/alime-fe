@@ -30,7 +30,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/upload`,
-      requestOptions as any
+      requestOptions as TAny
     );
     const result = await response.json();
     return result;
@@ -49,7 +49,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/translate`,
-      requestOptions as any
+      requestOptions as TAny
     );
     const result = await response.json();
     return result;
@@ -68,7 +68,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/export-video`,
-      requestOptions as any
+      requestOptions as TAny
     );
     const result = await response.json();
     return result;
@@ -81,7 +81,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/download-video`,
-      requestOptions as any
+      requestOptions as TAny
     );
     const blob = await response.blob();
 
@@ -118,7 +118,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/process-tts-text`,
-      requestOptions as any
+      requestOptions as TAny
     );
 
     const result = await response.json();
@@ -140,7 +140,7 @@ export const TranscriptApi = {
 
     const response = await fetch(
       `${config.apiURL}/api/stream-audio`,
-      requestOptions as any
+      requestOptions as TAny
     );
     const blob = await response.blob();
     return blob;
