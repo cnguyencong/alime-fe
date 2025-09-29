@@ -1,0 +1,237 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Outlook-inspired blue theme */
+    --primary: 244 100% 70%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 213 94% 58%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 213 94% 68%;
+
+    /* Outlook calendar specific colors */
+    --calendar-primary: 213 94% 68%;
+    --calendar-primary-light: 213 94% 85%;
+    --calendar-accent: 213 94% 58%;
+    --calendar-sidebar: 220 14% 96%;
+    --calendar-border: 220 13% 91%;
+    --calendar-hover: 213 94% 95%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(244, 88%, 75%), hsl(244, 100%, 70%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 14% 96%));
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 213 94% 68%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 213 94% 58%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 213 94% 68%;
+
+    /* Dark mode calendar colors */
+    --calendar-primary: 213 94% 68%;
+    --calendar-primary-light: 213 94% 25%;
+    --calendar-accent: 213 94% 58%;
+    --calendar-sidebar: 222.2 84% 6%;
+    --calendar-border: 217.2 32.6% 17.5%;
+    --calendar-hover: 213 94% 15%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(213 94% 68%), hsl(213 94% 58%));
+    --gradient-subtle: linear-gradient(180deg, hsl(222.2 84% 4.9%), hsl(222.2 84% 6%));
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* FullCalendar Outlook-style customization */
+  .fc {
+    font-family: inherit;
+  }
+
+  .fc-theme-standard .fc-scrollgrid {
+    border: 1px solid hsl(var(--calendar-border));
+  }
+
+  .fc-theme-standard td,
+  .fc-theme-standard th {
+    border: 1px solid hsl(var(--calendar-border));
+  }
+
+  .fc-col-header-cell {
+    background: hsl(var(--calendar-sidebar));
+    font-weight: 600;
+    padding: 12px 8px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  .fc-daygrid-day {
+    background: hsl(var(--background));
+  }
+
+  .fc-daygrid-day:hover {
+    background: hsl(var(--calendar-hover));
+  }
+
+  .fc-day-today {
+    background: hsl(var(--calendar-primary-light)) !important;
+  }
+
+  .fc-daygrid-day-number {
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    padding: 8px;
+  }
+
+  .fc-day-today .fc-daygrid-day-number {
+    color: hsl(var(--calendar-primary));
+    font-weight: 700;
+  }
+
+  .fc-event {
+    border: none !important;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 2px 6px;
+    margin: 1px 2px;
+  }
+
+  .fc-event-title {
+    font-weight: 600;
+  }
+
+  .fc-timegrid-slot {
+    height: 3rem;
+  }
+
+  .fc-timegrid-axis {
+    width: 60px;
+  }
+
+  .fc-timegrid-slot-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .fc-now-indicator-line {
+    border-color: hsl(var(--calendar-primary));
+    border-width: 2px;
+  }
+
+  .fc-more-link {
+    color: hsl(var(--calendar-primary));
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+
+  .fc-more-link:hover {
+    color: hsl(var(--calendar-accent));
+    text-decoration: none;
+  }
+
+  /* Custom scrollbar */
+  .fc-scroller::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .fc-scroller::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  .fc-scroller::-webkit-scrollbar-thumb {
+    background: hsl(var(--calendar-primary));
+    border-radius: 3px;
+  }
+
+  .fc-scroller::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--calendar-accent));
+  }
+}
