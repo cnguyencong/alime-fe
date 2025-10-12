@@ -1,13 +1,34 @@
-import CalendarSidebar from "@/components/Calendar/CalendarSidebar";
+import { getTimeOffRequests, getWFHRequests } from "@/api/attendance.api";
 import CalendarView from "@/components/Calendar/CalendarView";
-import { Agenda, Login, useIsSignedIn } from "@microsoft/mgt-react";
+import { Login, useIsSignedIn } from "@microsoft/mgt-react";
+import { useQuery } from "@tanstack/react-query";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
+import { transformTimeOffRequestsToCalendarEvents } from "@/lib/time-off-transformer";
+import { transformWFHRequestsToCalendarEvents } from "@/lib/wfh-transformer";
 
 const Index = () => {
   const [isSignedIn] = useIsSignedIn();
   console.log(isSignedIn);
   const [currentView, setCurrentView] = useState("dayGridMonth");
+
+  const { data } = useQuery({
+    queryKey: ["timeOffRequests"],
+    queryFn: () => getTimeOffRequests(),
+  });
+
+  const timeOffEvents = data
+    ? transformTimeOffRequestsToCalendarEvents(data)
+    : [];
+
+  const { data: wfhData } = useQuery({
+    queryKey: ["wfhRequests"],
+    queryFn: () => getWFHRequests(),
+  });
+
+  const wfhEvents = wfhData
+    ? transformWFHRequestsToCalendarEvents(wfhData)
+    : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,18 +56,13 @@ const Index = () => {
       {/* Main Content */}
       {isSignedIn && (
         <div className="flex h-[calc(100vh-80px)]">
-          {/* Sidebar */}
-          <div
-            className={`translate-x-0 transition-transform duration-200 ease-in-out`}
-          >
-            <CalendarSidebar />
-          </div>
-
           {/* Calendar View */}
           <div className="flex-1 p-6">
             <CalendarView
               currentView={currentView}
               setCurrentView={setCurrentView}
+              timeOffEvents={timeOffEvents}
+              wfhEvents={wfhEvents}
             />
           </div>
         </div>

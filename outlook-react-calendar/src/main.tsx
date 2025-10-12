@@ -11,11 +11,12 @@ const scopes = scopesEnv
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
+  const clientSecret = import.meta.env.VITE_MSAL_CLIENT_SECRET as string;
 
 Providers.globalProvider = new Msal2Provider({
   clientId,
   authority,
-
+  
   scopes,
 });
 

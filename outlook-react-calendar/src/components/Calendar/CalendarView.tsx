@@ -1,27 +1,27 @@
-import { Button } from "@/components/ui/button";
-import {
-  getCalendarView,
-  GraphEvent,
-  createEvent,
-  getUserCalendars,
-} from "@/api/calendar.api";
+import { createEvent, getUserCalendars, GraphEvent } from "@/api/calendar.api";
+import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+import { CalendarEvent } from "@/lib/calendar-types";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CalendarToolbar } from "./CalendarToolbar";
 import { NewEventDialog } from "./NewEventDialog";
-import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+import { TimeOffDetailsDialog } from "./TimeOffDetailsDialog";
 
 interface CalendarViewProps {
   currentView: string;
   setCurrentView: (view: string) => void;
+  timeOffEvents?: CalendarEvent[];
+  wfhEvents?: CalendarEvent[];
 }
 
 export default function CalendarView({
   currentView,
   setCurrentView,
+  timeOffEvents = [],
+  wfhEvents = [],
 }: CalendarViewProps) {
   const {
     calendarApi,
@@ -42,6 +42,16 @@ export default function CalendarView({
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
 
+  // Time-off details dialog state
+  const [isTimeOffDetailsOpen, setIsTimeOffDetailsOpen] = useState(false);
+  const [selectedTimeOffData, setSelectedTimeOffData] = useState<
+    CalendarEvent["extendedProps"] | null
+  >(null);
+  const [selectedEventDates, setSelectedEventDates] = useState<{
+    start: string;
+    end: string;
+  } | null>(null);
+
   // fetchCalendarEvents provided by hook
 
   const handleDateClick = (arg: any) => {
@@ -50,13 +60,25 @@ export default function CalendarView({
 
   const handleEventClick = (arg: any) => {
     console.log("Event clicked:", arg.event.title);
+
+    if (
+      arg.event.extendedProps?.type === "time-off" ||
+      arg.event.extendedProps?.type === "wfh"
+    ) {
+      const eventData = arg.event.extendedProps;
+      setSelectedTimeOffData(eventData);
+      setSelectedEventDates({
+        start: arg.event.start,
+        end: arg.event.end,
+      });
+      setIsTimeOffDetailsOpen(true);
+    }
   };
 
   const handleCreateEvent = async () => {
     if (!newTitle || !newStart || !newEnd) return;
     try {
       setCreating(true);
-      // Choose a calendar id (pick the first user's calendar)
       const calendars = await getUserCalendars();
       const calendarId = calendars?.[0]?.id;
       if (!calendarId) throw new Error("No calendar available");
@@ -134,6 +156,14 @@ export default function CalendarView({
           setNewDescription={setNewDescription}
           onCreate={handleCreateEvent}
         />
+
+        <TimeOffDetailsDialog
+          open={isTimeOffDetailsOpen}
+          onOpenChange={setIsTimeOffDetailsOpen}
+          eventData={selectedTimeOffData}
+          startDate={selectedEventDates?.start}
+          endDate={selectedEventDates?.end ?? selectedEventDates?.start}
+        />
         {loading && (
           <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -151,7 +181,7 @@ export default function CalendarView({
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView={currentView}
           headerToolbar={false}
-          events={events}
+          events={[...events, ...timeOffEvents, ...wfhEvents]}
           dateClick={handleDateClick}
           eventClick={handleEventClick}
           height="auto"
