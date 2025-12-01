@@ -1,0 +1,187 @@
+<div class="active-list-page">
+  <header class="page-header">
+    <div>
+      <h1>Active Parkings</h1>
+      <p class="subtitle">Manage list of vehicles currently parked</p>
+    </div>
+    <div class="header-badge">
+      <span class="badge-value">{{ totalActive$ | async }}</span>
+      <span class="badge-label">vehicles</span>
+    </div>
+  </header>
+
+  <section class="search-section">
+    <div class="search-card">
+      <div class="search-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="search-content">
+        <label class="field">
+          <span class="field-label">License Plate to Check-out</span>
+          <input
+            [(ngModel)]="licenseToCheckout"
+            name="licenseToCheckout"
+            placeholder="e.g: 43A-123.45"
+            class="search-input"
+            [disabled]="isLoading"
+          />
+        </label>
+        <button type="button" class="btn-search" (click)="checkOut()" [disabled]="isLoading">
+          @if (isLoading) {
+          <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-dasharray="32"
+              stroke-dashoffset="32"
+            >
+              <animate
+                attributeName="stroke-dasharray"
+                dur="2s"
+                values="0 32;16 16;0 32;0 32"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="stroke-dashoffset"
+                dur="2s"
+                values="0;-16;-32;-32"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </svg>
+          Processing... } @else {
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Search & Check-out }
+        </button>
+      </div>
+    </div>
+  </section>
+
+  @if (error) {
+  <div class="alert alert-error">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <span>{{ error }}</span>
+  </div>
+  } @if (message) {
+  <div class="alert alert-success">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <span>{{ message }}</span>
+  </div>
+  } @if ((activeParkings$ | async)?.length === 0) {
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M9 17H15M9 13H15M9 9H10.01M5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3Z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+    <p class="empty-state-text">No vehicles currently parked</p>
+    <p class="empty-state-description">All slots are empty</p>
+  </div>
+  } @else {
+  <div class="table-container">
+    <table class="parking-table">
+      <thead>
+        <tr>
+          <th>License Plate</th>
+          <th>Vehicle Type</th>
+          <th>Slot</th>
+          <th>Check-in Time</th>
+          <th>Duration</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (parkingData$ | async; as data) { @for (p of data.activeParkings; track p.id) { @let
+        vehicle = vehicleById(data.vehicles, p.vehicleId);
+        <tr>
+          <td>
+            <div class="license-plate">
+              <span class="license-plate-text">{{ vehicle?.licensePlate }}</span>
+            </div>
+          </td>
+          <td>
+            <span
+              class="vehicle-type"
+              [class.vehicle-type-motorbike]="vehicle?.type === 'motorbike'"
+              [class.vehicle-type-car]="vehicle?.type === 'car'"
+            >
+              {{ vehicle?.type === 'car' ? 'Car' : 'Motorbike' }}
+            </span>
+          </td>
+          <td>
+            <span class="slot-badge">{{ p.slotId }}</span>
+          </td>
+          <td>
+            <span class="time-text">{{ p.checkInTime | date : 'HH:mm' }}</span>
+          </td>
+          <td>
+            <span class="duration-text">{{ getDuration(p.checkInTime) }}</span>
+          </td>
+          <td class="actions">
+            <button
+              type="button"
+              class="btn-checkout"
+              (click)="checkOut(vehicle?.licensePlate ?? null)"
+              [disabled]="isLoading"
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M18 6L6 18M6 6L18 18"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Check-out
+            </button>
+          </td>
+        </tr>
+        } }
+      </tbody>
+    </table>
+  </div>
+  }
+</div>

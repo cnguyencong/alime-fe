@@ -1,0 +1,168 @@
+<div class="dashboard">
+  <header class="dashboard-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="subtitle">Parking management system overview</p>
+    </div>
+  </header>
+
+  <section class="stats-grid">
+    <div class="stat-card stat-card-primary">
+      <div class="stat-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M9 22V12H15V22"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Total Slots</h3>
+        <p class="stat-card-value">{{ totalSlots$ | async }}</p>
+        <span class="stat-card-description">Total parking spaces</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card-success">
+      <div class="stat-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Available</h3>
+        <p class="stat-card-value">{{ availableSlots$ | async }}</p>
+        <span class="stat-card-description">{{ availablePercentage$ | async }}% available</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card-warning">
+      <div class="stat-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Occupied</h3>
+        <p class="stat-card-value">{{ occupiedSlots$ | async }}</p>
+        <span class="stat-card-description">{{ occupancyRate$ | async }}% occupancy rate</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card-info">
+      <div class="stat-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M9 17H15M9 13H15M9 9H10.01M5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Parked Vehicles</h3>
+        <p class="stat-card-value">{{ occupiedSlots$ | async }}</p>
+        <span class="stat-card-description">Current number of vehicles</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="active-parkings-section">
+    <div class="section-header">
+      <h2 class="section-title">Slot List</h2>
+      <span class="section-badge">{{ totalSlots$ | async }}</span>
+    </div>
+
+    @if ((slots$ | async)?.length === 0) {
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M9 17H15M9 13H15M9 9H10.01M5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <p class="empty-state-text">No slots available</p>
+      <p class="empty-state-description">No slot data in the system</p>
+    </div>
+    } @else {
+    <div class="table-container">
+      <table class="parking-table">
+        <thead>
+          <tr>
+            <th>ID Slot</th>
+            <th>Zone</th>
+            <th>Vehicle Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (slot of slots$ | async; track slot.id) {
+          <tr>
+            <td>
+              <span class="slot-badge">{{ slot.id }}</span>
+            </td>
+            <td>
+              <span class="zone-badge">{{ slot.zone }}</span>
+            </td>
+            <td>
+              <span
+                class="vehicle-type"
+                [class.vehicle-type-motorbike]="slot.type === 'motorbike'"
+                [class.vehicle-type-car]="slot.type === 'car'"
+              >
+                {{ slot.type === 'car' ? 'Car' : 'Motorbike' }}
+              </span>
+            </td>
+            <td>
+              <span
+                class="status-badge"
+                [class.status-empty]="slot.status === 'empty'"
+                [class.status-occupied]="slot.status === 'occupied'"
+                [class.status-maintenance]="slot.status === 'maintenance'"
+              >
+                {{
+                  slot.status === 'empty'
+                    ? 'Empty'
+                    : slot.status === 'occupied'
+                    ? 'Occupied'
+                    : 'Maintenance'
+                }}
+              </span>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </section>
+</div>

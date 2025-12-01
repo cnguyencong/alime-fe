@@ -1,0 +1,53 @@
+<div class="app-shell">
+  <aside class="sidebar" [class.collapsed]="isSidebarCollapsed()">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <app-logo-icon></app-logo-icon>
+        </div>
+        <div class="logo-text">
+          <span class="logo-title">Parking</span>
+          <span class="logo-subtitle">CRM</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active">
+        <app-dashboard-icon></app-dashboard-icon>
+        <span class="nav-text">Dashboard</span>
+      </a>
+
+      <a routerLink="/parking/active" routerLinkActive="active">
+        <app-list-icon></app-list-icon>
+        <span class="nav-text">Active Parkings</span>
+      </a>
+
+      <a routerLink="/parking/check-in" routerLinkActive="active">
+        <app-plus-icon></app-plus-icon>
+        <span class="nav-text">Check-in</span>
+      </a>
+
+      <a routerLink="/parking/check-out" routerLinkActive="active">
+        <app-x-icon></app-x-icon>
+        <span class="nav-text">Check-out</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button
+        type="button"
+        class="toggle-btn"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="isSidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        [attr.aria-expanded]="!isSidebarCollapsed()"
+      >
+        <app-chevron-right-icon [rotated]="isSidebarCollapsed()"></app-chevron-right-icon>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main" [class.sidebar-collapsed]="isSidebarCollapsed()">
+    <router-outlet></router-outlet>
+  </main>
+</div>

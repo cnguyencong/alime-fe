@@ -1,0 +1,258 @@
+<div class="check-out-page">
+  <header class="page-header">
+    <div>
+      <h1>Check-out Vehicle</h1>
+      <p class="subtitle">Calculate fee and exit vehicle from parking lot</p>
+    </div>
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M18 6L6 18M6 6L18 18"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+  </header>
+
+  <section class="search-section">
+    <div class="search-card">
+      <div class="search-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="search-content">
+        <label class="field">
+          <span class="field-label">License Plate</span>
+          <input
+            [(ngModel)]="licensePlate"
+            name="licensePlate"
+            placeholder="e.g: 43A-123.45"
+            class="search-input"
+          />
+        </label>
+        <button type="button" class="btn-search" (click)="search()" [disabled]="isLoading">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Search Vehicle
+        </button>
+      </div>
+    </div>
+  </section>
+
+  @if (error) {
+  <div class="alert alert-error">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <span>{{ error }}</span>
+  </div>
+  } @if (message) {
+  <div class="alert alert-success">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <span>{{ message }}</span>
+  </div>
+  } @if (selectedVehicle && selectedActive) {
+  <section class="summary-section">
+    <div class="summary-card">
+      <div class="summary-header">
+        <h2>Parking Information</h2>
+        <div class="summary-badge">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Found
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M9 17H15M9 13H15M9 9H10.01M5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            License Plate
+          </div>
+          <div class="summary-value license-plate-value">
+            {{ selectedVehicle.licensePlate }}
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <div class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M8 7H16M8 12H16M8 17H12M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Vehicle Type
+          </div>
+          <div class="summary-value">
+            <span
+              class="vehicle-type"
+              [class.vehicle-type-motorbike]="selectedVehicle.type === 'motorbike'"
+              [class.vehicle-type-car]="selectedVehicle.type === 'car'"
+            >
+              {{ selectedVehicle.type === 'car' ? 'Car' : 'Motorbike' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <div class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Slot
+          </div>
+          <div class="summary-value">
+            <span class="slot-badge">{{ selectedActive.slotId }}</span>
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <div class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Check-in Time
+          </div>
+          <div class="summary-value time-value">
+            {{ selectedActive.checkInTime | date : 'HH:mm' }}
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <div class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Parking Duration
+          </div>
+          <div class="summary-value duration-value">{{ durationHours() }} hours</div>
+        </div>
+
+        <div class="summary-item summary-item-total">
+          <div class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 8C12 8 9 4 5 4C5 8 5 12 12 20C19 12 19 8 19 4C15 4 12 8 12 8Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Parking Fee
+          </div>
+          <div class="summary-value fee-value">{{ fee() | number }} VND</div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-confirm" (click)="confirmCheckout()" [disabled]="isLoading">
+        @if (isLoading) {
+        <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-dasharray="32"
+            stroke-dashoffset="32"
+          >
+            <animate
+              attributeName="stroke-dasharray"
+              dur="2s"
+              values="0 32;16 16;0 32;0 32"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="stroke-dashoffset"
+              dur="2s"
+              values="0;-16;-32;-32"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </svg>
+        Processing... } @else {
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M5 13L9 17L19 7"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Confirm Check-out }
+      </button>
+    </div>
+  </section>
+  }
+</div>
